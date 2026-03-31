@@ -89,15 +89,17 @@ function loadConfig() {
   if (existsSync(CONFIG_FILE)) {
     try {
       const config = JSON.parse(readFileSync(CONFIG_FILE, 'utf-8'));
-      if (!config.workspaces) config.workspaces = [];
-      // Clean up ignoredRepos if present
-      if (config.ignoredRepos) delete config.ignoredRepos;
+      if (!config.repos) {
+        // Migration state: if user had old config with workspaces, clean it
+        if (config.workspaces) delete config.workspaces;
+        config.repos = [];
+      }
       return config;
     } catch {
-      return { workspaces: [] };
+      return { repos: [] };
     }
   }
-  return { workspaces: [] };
+  return { repos: [] };
 }
 
 function saveConfig(config) {
@@ -115,20 +117,23 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Health check
 app.get('/api/health', (req, res) => {
-  const config = loadConfig();
-  res.json({ status: 'ok', workspaces: config.workspaces });
+  res.json({ status: 'ok' });
 });
 
 // ===== WORKSPACE MANAGEMENT =====
 
-// GET /api/workspaces - List all configured workspaces
+// GET /api/workspaces - List unique workspaces from tracked repos
 app.get('/api/workspaces', (req, res) => {
   const config = loadConfig();
-  res.json(config.workspaces);
+  const wsSet = new Set();
+  config.repos.forEach(r => {
+    if (r.workspace) wsSet.add(r.workspace);
+  });
+  res.json(Array.from(wsSet));
 });
 
-// POST /api/workspaces - Add a new workspace path
-app.post('/api/workspaces', async (req, res) => {
+// POST /api/repos/scan - Scan a folder and add all unique repos to config
+app.post('/api/repos/scan', async (req, res) => {
   try {
     const { path: wsPath } = req.body;
 
@@ -136,10 +141,8 @@ app.post('/api/workspaces', async (req, res) => {
       return res.status(400).json({ error: 'Path is required' });
     }
 
-    // Normalize the path
     const normalizedPath = path.resolve(wsPath);
 
-    // Verify the directory exists
     try {
       const stat = await fs.stat(normalizedPath);
       if (!stat.isDirectory()) {
@@ -149,37 +152,65 @@ app.post('/api/workspaces', async (req, res) => {
       return res.status(400).json({ error: 'Directory does not exist' });
     }
 
+    // Perform the heavy scan once
+    const foundRepos = await scanWorkspace(normalizedPath, normalizedPath);
+    
     const config = loadConfig();
+    let addedCount = 0;
+    
+    // Save to static list
+    foundRepos.forEach(repoInfo => {
+      const exists = config.repos.some(r => r.path === repoInfo.path);
+      if (!exists) {
+        config.repos.push({ path: repoInfo.path, workspace: repoInfo.workspace });
+        addedCount++;
+      }
+    });
 
-    // Check for duplicates
-    if (config.workspaces.some((w) => path.resolve(w) === normalizedPath)) {
-      return res.status(409).json({ error: 'Workspace already exists' });
-    }
-
-    config.workspaces.push(normalizedPath);
     saveConfig(config);
 
-    res.status(201).json({ message: 'Workspace added', workspaces: config.workspaces });
+    res.status(201).json({ message: 'Workspace scanned and repos added', addedCount });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to add workspace', detail: err.message });
+    res.status(500).json({ error: 'Failed to scan workspace', detail: err.message });
   }
 });
 
-// DELETE /api/workspaces - Remove a workspace path
+// DELETE /api/workspaces - Remove all tracked repos belonging to a workspace
 app.delete('/api/workspaces', (req, res) => {
   try {
     const { path: wsPath } = req.body;
     const config = loadConfig();
     const normalizedPath = path.resolve(wsPath);
 
-    config.workspaces = config.workspaces.filter(
-      (w) => path.resolve(w) !== normalizedPath
+    config.repos = config.repos.filter(
+      (r) => path.resolve(r.workspace) !== normalizedPath
     );
     saveConfig(config);
 
-    res.json({ message: 'Workspace removed', workspaces: config.workspaces });
+    res.json({ message: 'Workspace repos removed' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to remove workspace', detail: err.message });
+  }
+});
+
+// DELETE /api/repos - Remove explicit repos from list
+app.delete('/api/repos', (req, res) => {
+  try {
+    const { paths } = req.body;
+    if (!Array.isArray(paths)) {
+      return res.status(400).json({ error: 'Paths array is required' });
+    }
+    const config = loadConfig();
+    const normalizedPathsToRemove = paths.map(p => path.resolve(p));
+
+    config.repos = config.repos.filter(
+      (r) => !normalizedPathsToRemove.includes(path.resolve(r.path))
+    );
+    saveConfig(config);
+
+    res.json({ message: 'Repos removed' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to remove repos', detail: err.message });
   }
 });
 
@@ -357,8 +388,8 @@ app.post('/api/repo/open_folder', (req, res) => {
   
   exec(`explorer "${repoPath}"`, (err) => {
     if (err) {
-      console.error('Failed to open explorer:', err);
-      return res.status(500).json({ error: 'Failed to open folder' });
+      // explorer.exe thường trả về exit code 1 ở một số thiết lập Windows dù vẫn mở được folder
+      console.warn(`Explorer returned error code for ${repoPath}, but folder might be opened:`, err.message);
     }
     res.json({ success: true });
   });
@@ -591,35 +622,37 @@ app.post('/api/commits/timeline', async (req, res) => {
   }
 });
 
-// GET /api/repos - List all git repos across all workspaces (or a specific one)
+// GET /api/repos - Get info of all tracked repos
 app.get('/api/repos', async (req, res) => {
   try {
     const config = loadConfig();
     const targetWs = req.query.workspace;
 
-    const workspacesToScan = targetWs ? [targetWs] : config.workspaces;
+    const reposToProcess = targetWs 
+      ? config.repos.filter(r => r.workspace === targetWs)
+      : config.repos;
 
-    if (workspacesToScan.length === 0) {
+    if (reposToProcess.length === 0) {
       return res.json([]);
     }
 
-    // Scan all workspaces in parallel
-    const scanPromises = workspacesToScan.map(async (ws) => {
+    // Get info in parallel (internally limited by gitLimit)
+    const promises = reposToProcess.map(async (r) => {
       try {
-        return await scanWorkspace(ws, ws);
+        return await getRepoInfo(r.path, r.workspace);
       } catch (err) {
-        console.error(`Failed to scan workspace ${ws}:`, err.message);
-        return [];
+        console.error(`Failed to get info for ${r.path}:`, err.message);
+        return null; // Ignore errors, it will just drop the repo or we can return error entry
       }
     });
 
-    const results = await Promise.all(scanPromises);
-    const allRepos = results.flat();
+    const results = await Promise.all(promises);
+    const validResults = results.filter(Boolean);
 
-    res.json(allRepos);
+    res.json(validResults);
   } catch (err) {
-    console.error('Failed to scan repositories:', err);
-    res.status(500).json({ error: 'Failed to scan repositories', detail: err.message });
+    console.error('Failed to get repositories:', err);
+    res.status(500).json({ error: 'Failed to get repositories', detail: err.message });
   }
 });
 
@@ -627,7 +660,7 @@ app.get('/api/repos', async (req, res) => {
 app.listen(PORT, () => {
   const config = loadConfig();
   console.log(`🚀 GitManage server running at http://localhost:${PORT}`);
-  console.log(`📂 Workspaces: ${config.workspaces.length} configured`);
+  console.log(`📂 Tracked Repos: ${config.repos?.length || 0} configured`);
   console.log(`⚡ Git concurrency: ${GIT_CONCURRENCY} local / ${NETWORK_CONCURRENCY} network`);
   console.log(`💾 Cache TTL: ${CACHE_TTL_MS / 1000}s`);
 });

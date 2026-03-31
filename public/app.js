@@ -128,53 +128,52 @@
       const isSelected = selectedRepoPaths.has(repo.path);
       const escapedWs = repo.workspace ? repo.workspace.replace(/\\/g, '\\\\') : '';
       return `
-        <td class="px-6 py-4 text-center">
+        <td class="px-3 sm:px-6 py-3 sm:py-4 text-center">
           <input type="checkbox" value="${encodedPath}" ${isSelected ? 'checked' : ''} onchange="toggleRepoSelection(this, '${encodedPath}')" class="repo-checkbox w-4 h-4 rounded appearance-none border-2 border-slate-600 bg-surface/50 text-accent checked:bg-accent checked:border-accent cb-folder cursor-pointer transition-all hover:border-accent/50">
         </td>
-        <td class="px-6 py-4 text-sm text-slate-500/80 font-mono">${String(i + 1).padStart(2, '0')}</td>
-        <td class="px-6 py-4">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-accent/20 to-purple-500/20 border border-white/5 shadow-inner flex items-center justify-center flex-shrink-0 cursor-pointer hover:scale-110 transition-transform" onclick="openGraphModal('${escapedPath}', '${repo.name}')" title="Xem Git Graph">
-              <svg class="w-4.5 h-4.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <td class="hidden sm:table-cell px-3 sm:px-6 py-3 sm:py-4 text-sm text-slate-500/80 font-mono">${String(i + 1).padStart(2, '0')}</td>
+        <td class="px-3 sm:px-6 py-3 sm:py-4">
+          <div class="flex items-center gap-2 sm:gap-3">
+            <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-accent/20 to-purple-500/20 border border-white/5 shadow-inner flex items-center justify-center flex-shrink-0 cursor-pointer hover:scale-110 transition-transform" onclick="openGraphModal('${escapedPath}', '${repo.name}')" title="Xem Git Graph">
+              <svg class="w-4 h-4 sm:w-4.5 sm:h-4.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
               </svg>
             </div>
-            <div>
-              <p class="text-[15px] font-semibold text-slate-200 tracking-tight leading-snug cursor-pointer hover:text-accent transition-colors w-fit" onclick="openGraphModal('${escapedPath}', '${repo.name}')" title="Xem Git Graph">${repo.name}</p>
-              <p class="text-[12px] text-slate-500 font-mono tracking-tight truncate max-w-[200px]" title="${repo.path}">${wsLabel ? '<span class="text-accent/50">' + wsLabel + '/</span>' : ''}${repo.name}</p>
+            <div class="min-w-0">
+              <p class="text-[14px] sm:text-[15px] font-semibold text-slate-200 tracking-tight leading-snug cursor-pointer hover:text-accent transition-colors w-fit truncate" onclick="openGraphModal('${escapedPath}', '${repo.name}')" title="Xem Git Graph">${repo.name}</p>
+              <p class="text-[11px] sm:text-[12px] text-slate-500 font-mono tracking-tight truncate max-w-[150px] sm:max-w-[200px]" title="${repo.path}">${wsLabel ? '<span class="text-accent/50">' + wsLabel + '/</span>' : ''}${repo.name}</p>
             </div>
           </div>
         </td>
-        <td class="px-6 py-4">${buildBranchBadge(repo, i)}</td>
-        <td class="px-6 py-4">${buildStatusBadge(repo, i)}</td>
-        <td class="px-6 py-4 text-right">
-          <div class="flex items-center justify-end gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
-            <button onclick="openFolder('${escapedPath}')" class="btn-action btn-linear p-2 text-slate-400 hover:text-white hover:!border-slate-500/40 hover:bg-white/10 rounded-xl transition-all shadow-sm mr-2" title="Open Folder (Explorer)">
-              <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+        <td class="px-3 sm:px-6 py-3 sm:py-4">${buildBranchBadge(repo, i)}</td>
+        <td class="px-3 sm:px-6 py-3 sm:py-4">${buildStatusBadge(repo, i)}</td>
+        <td class="px-3 sm:px-6 py-3 sm:py-4">
+          <div class="grid grid-cols-4 gap-1 sm:gap-2 w-max ml-auto opacity-70 group-hover:opacity-100 transition-opacity">
+            <button onclick="openFolder('${escapedPath}')" class="btn-action btn-linear p-1.5 sm:p-2 text-slate-400 hover:text-white hover:!border-slate-500/40 hover:bg-white/10 rounded-xl transition-all shadow-sm flex items-center justify-center" title="Open Folder (Explorer)">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
             </button>
-            <button onclick="repoAction('${escapedPath}', '${escapedWs}', ${i}, 'fetch', this)" class="btn-action btn-linear p-2 text-slate-300 hover:text-sky-400 hover:!border-sky-500/40 hover:bg-sky-500/10 rounded-xl transition-all disabled:opacity-50" title="Fetch from remote">
-              <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3 3m0 0l-3-3m3 3V8"/></svg>
+            <button onclick="repoAction('${escapedPath}', '${escapedWs}', ${i}, 'fetch', this)" class="btn-action btn-linear p-1.5 sm:p-2 text-slate-300 hover:text-sky-400 hover:!border-sky-500/40 hover:bg-sky-500/10 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center" title="Fetch from remote">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3 3m0 0l-3-3m3 3V8"/></svg>
             </button>
-            <button onclick="repoAction('${escapedPath}', '${escapedWs}', ${i}, 'pull', this)" class="btn-action btn-linear p-2 text-slate-300 hover:text-emerald-400 hover:!border-emerald-500/40 hover:bg-emerald-500/10 rounded-xl transition-all disabled:opacity-50" title="Pull latest changes">
-              <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            <button onclick="repoAction('${escapedPath}', '${escapedWs}', ${i}, 'pull', this)" class="btn-action btn-linear p-1.5 sm:p-2 text-slate-300 hover:text-emerald-400 hover:!border-emerald-500/40 hover:bg-emerald-500/10 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center" title="Pull latest changes">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
             </button>
-            <button onclick="repoAction('${escapedPath}', '${escapedWs}', ${i}, 'push', this)" class="btn-action btn-linear p-2 text-slate-300 hover:text-amber-400 hover:!border-amber-500/40 hover:bg-amber-500/10 rounded-xl transition-all disabled:opacity-50" title="Push local commits">
-              <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            <button onclick="repoAction('${escapedPath}', '${escapedWs}', ${i}, 'push', this)" class="btn-action btn-linear p-1.5 sm:p-2 text-slate-300 hover:text-amber-400 hover:!border-amber-500/40 hover:bg-amber-500/10 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center" title="Push local commits">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
             </button>
-            <div class="w-px h-4 bg-white/10 mx-1"></div>
-            <button onclick="repoAction('${escapedPath}', '${escapedWs}', ${i}, 'stash', this)" class="btn-action btn-linear p-2 text-slate-300 hover:text-white hover:!border-slate-500/40 hover:bg-white/10 rounded-xl transition-all disabled:opacity-50" title="Stash Changes">
-              <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+            <button onclick="repoAction('${escapedPath}', '${escapedWs}', ${i}, 'stash', this)" class="btn-action btn-linear p-1.5 sm:p-2 text-slate-300 hover:text-white hover:!border-slate-500/40 hover:bg-white/10 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center" title="Stash Changes">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
             </button>
-            <button onclick="repoAction('${escapedPath}', '${escapedWs}', ${i}, 'pop', this)" class="btn-action btn-linear p-2 text-slate-300 hover:text-white hover:!border-slate-500/40 hover:bg-white/10 rounded-xl transition-all disabled:opacity-50" title="Pop Stash">
-              <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 8H5M19 8a2 2 0 100-4H5a2 2 0 100 4M19 8v10a2 2 0 01-2 2H7a2 2 0 01-2-2V8m9 4H8m4 0v4"/></svg>
+            <button onclick="repoAction('${escapedPath}', '${escapedWs}', ${i}, 'pop', this)" class="btn-action btn-linear p-1.5 sm:p-2 text-slate-300 hover:text-white hover:!border-slate-500/40 hover:bg-white/10 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center" title="Pop Stash">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 8H5M19 8a2 2 0 100-4H5a2 2 0 100 4M19 8v10a2 2 0 01-2 2H7a2 2 0 01-2-2V8m9 4H8m4 0v4"/></svg>
             </button>
-            <button onclick="refreshSingleRepo('${escapedPath}', '${escapedWs}', ${i})" class="btn-refresh-row p-2 text-slate-400 hover:text-white bg-white/5 hover:bg-accent/20 border border-transparent hover:border-accent/40 rounded-xl transition-all disabled:opacity-50 shadow-sm ml-1" title="Refresh local status">
-              <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button onclick="refreshSingleRepo('${escapedPath}', '${escapedWs}', ${i})" class="btn-refresh-row p-1.5 sm:p-2 text-slate-400 hover:text-white bg-white/5 hover:bg-accent/20 border border-transparent hover:border-accent/40 rounded-xl transition-all disabled:opacity-50 shadow-sm flex items-center justify-center" title="Refresh local status">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
             </button>
-            <button onclick="removeSingleRepoWorkspace('${escapedPath}')" class="btn-refresh-row p-2 text-slate-400 hover:text-red-400 bg-white/5 hover:bg-red-500/10 border border-transparent hover:border-red-500/40 rounded-xl transition-all disabled:opacity-50 shadow-sm ml-1" title="Remove Repository (Workspace)">
-              <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            <button onclick="removeSingleRepoWorkspace('${escapedPath}')" class="btn-refresh-row p-1.5 sm:p-2 text-slate-400 hover:text-red-400 bg-white/5 hover:bg-red-500/10 border border-transparent hover:border-red-500/40 rounded-xl transition-all disabled:opacity-50 shadow-sm flex items-center justify-center" title="Remove Repository">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
         </td>
@@ -304,7 +303,7 @@
     }
 
     async function addWorkspace(wsPath) {
-      const res = await fetch('/api/workspaces', {
+      const res = await fetch('/api/repos/scan', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ path: wsPath }),
       });
@@ -662,23 +661,20 @@
       if (selectedRepoPaths.size === 0) return;
       const paths = Array.from(selectedRepoPaths);
       
-      if (!confirm(`Bạn có chắc muốn xoá [${paths.length}] Repositories này khỏi danh sách? (Thao tác này tương đương với xoá Workspace tương ứng)`)) return;
+      if (!confirm(`Bạn có chắc muốn xoá [${paths.length}] Repositories này khỏi danh sách quản lý?`)) return;
 
-      const wsPathsToDel = new Set();
-      paths.forEach(p => {
-         const repo = currentRepos.find(r => r.path === p);
-         if (repo && repo.workspace) wsPathsToDel.add(repo.workspace);
-      });
-      
-      const uniqueWs = Array.from(wsPathsToDel);
-      for(const ws of uniqueWs) {
-         try { await fetch('/api/workspaces', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: ws }) }); } catch(e){}
-      }
+      try {
+        await fetch('/api/repos', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paths })
+        });
+      } catch(e) { console.error(e); }
       
       await loadWorkspaces();
       
       // Filter locally
-      currentRepos = currentRepos.filter(r => !uniqueWs.includes(r.workspace));
+      currentRepos = currentRepos.filter(r => !paths.includes(r.path));
       updateStats(currentRepos);
       
       // Cleanup selection
@@ -691,17 +687,37 @@
         filterReposText();
         showState('data');
       }
-      showToast(`Đã xoá ${paths.length} repo / ${uniqueWs.length} workspace khỏi quản lý.`, 'success');
+      showToast(`Đã xoá ${paths.length} repo khỏi quản lý.`, 'success');
     }
 
     async function removeSingleRepoWorkspace(repoPath) {
       const repo = currentRepos.find(r => r.path === repoPath);
-      if(!repo || !repo.workspace) return;
+      if(!repo) return;
       
-      if (!confirm(`Xoá repository này khỏi danh sách quản lý? (Tương đương xoá Workspace: ${repo.workspace.split(/[/\\]/).pop()})`)) return;
+      if (!confirm(`Xoá repository này khỏi danh sách quản lý?\n${repo.name}`)) return;
       
-      await removeWorkspace(repo.workspace);
-      showToast('Đã xoá khỏi danh sách quản lý', 'success');
+      try {
+        await fetch('/api/repos', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ paths: [repoPath] })
+        });
+      } catch(e) { console.error(e); }
+      
+      await loadWorkspaces();
+
+      // Filter locally
+      currentRepos = currentRepos.filter(r => r.path !== repoPath);
+      updateStats(currentRepos);
+      
+      if (!currentRepos.length) {
+        showState(workspaces.length === 0 ? 'no-workspace' : 'empty');
+      } else {
+        filterReposText();
+        showState('data');
+      }
+
+      showToast(`Đã xoá ${repo.name} khỏi danh sách quản lý`, 'success');
     }
   
 

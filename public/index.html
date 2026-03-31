@@ -340,7 +340,7 @@
         <div class="flex items-center gap-3">
           <h2 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-200 to-slate-400">Microservices</h2>
           <!-- Bulk actions toolbar -->
-          <div id="bulk-actions" class="hidden items-center bg-black/40 backdrop-blur-xl border border-white/10 p-1.5 rounded-xl ml-2 animate-fade-in relative transition-all duration-300 shadow-[0_4px_16px_rgba(0,0,0,0.4)]">
+          <div id="bulk-actions" class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] items-center bg-[#0b0c10]/90 backdrop-blur-2xl border border-white/20 p-2 rounded-2xl animate-fade-in transition-all duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
             <span id="bulk-count" class="text-[11px] font-bold text-accent px-2 tracking-wider uppercase">0 selected</span>
             <div class="w-px h-5 bg-white/10 mx-1"></div>
             <div class="flex items-center gap-1">
@@ -391,14 +391,14 @@
           <table class="w-full border-collapse">
             <thead class="bg-surface-card/50 backdrop-blur-xl border-b border-white/5 sticky top-0 z-20">
               <tr>
-                <th class="px-6 py-5 text-center w-12 border-r border-white/5">
+                <th class="px-3 sm:px-6 py-4 sm:py-5 text-center w-10 sm:w-12 border-r border-white/5">
                   <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)" class="w-4 h-4 rounded appearance-none border-2 border-slate-600 bg-surface/50 text-accent checked:bg-accent checked:border-accent cb-folder cursor-pointer transition-all hover:border-accent/50">
                 </th>
-                <th class="px-6 py-5 text-left text-[11px] font-bold text-slate-400/80 uppercase tracking-[0.15em] w-12 border-r border-white/5">#</th>
-                <th class="px-6 py-5 text-left text-[11px] font-bold text-slate-400/80 uppercase tracking-[0.15em] border-r border-white/5">Microservice</th>
-                <th class="px-6 py-5 text-left text-[11px] font-bold text-slate-400/80 uppercase tracking-[0.15em] border-r border-white/5">Branch</th>
-                <th class="px-6 py-5 text-left text-[11px] font-bold text-slate-400/80 uppercase tracking-[0.15em] border-r border-white/5 w-40">Status</th>
-                <th class="px-6 py-5 text-right text-[11px] font-bold text-slate-400/80 uppercase tracking-[0.15em] w-64">Actions</th>
+                <th class="hidden sm:table-cell px-3 sm:px-6 py-4 sm:py-5 text-left text-[11px] font-bold text-slate-400/80 uppercase tracking-[0.15em] w-12 border-r border-white/5">#</th>
+                <th class="px-3 sm:px-6 py-4 sm:py-5 text-left text-[11px] font-bold text-slate-400/80 uppercase tracking-[0.15em] border-r border-white/5">Microservice</th>
+                <th class="px-3 sm:px-6 py-4 sm:py-5 text-left text-[11px] font-bold text-slate-400/80 uppercase tracking-[0.15em] border-r border-white/5">Branch</th>
+                <th class="px-3 sm:px-6 py-4 sm:py-5 text-left text-[11px] font-bold text-slate-400/80 uppercase tracking-[0.15em] border-r border-white/5 w-32 sm:w-40">Status</th>
+                <th class="px-3 sm:px-6 py-4 sm:py-5 text-right text-[11px] font-bold text-slate-400/80 uppercase tracking-[0.15em] w-[140px] sm:w-[180px]">Actions</th>
               </tr>
             </thead>
             <tbody id="repos-tbody" class="divide-y divide-white/5"></tbody>
