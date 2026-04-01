@@ -1561,7 +1561,7 @@
           updateStats(currentRepos);
         }
         if (tr) {
-          tr.outerHTML = renderRepoRowInner(data.repo, rowIndex);
+          tr.innerHTML = renderRepoRowInner(data.repo, rowIndex);
         }
       } catch (err) {
         showToast(`Commit thất bại:\\n${err.message}`, 'error');
