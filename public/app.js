@@ -532,20 +532,26 @@
           const isChecked = selectedPaths.has(item.path);
           const escapedPath = item.path.replace(/\\/g, '\\\\');
           return `
-          <div class="browse-row flex items-center border-b border-surface-border/30 ${isChecked ? 'selected' : ''}" data-browse-path="${item.path}">
-            <!-- Checkbox area -->
-            <label class="flex items-center gap-3 px-5 py-3 cursor-pointer flex-1 min-w-0" onclick="event.stopPropagation()">
-              <input type="checkbox" class="cb-folder" id="cb-${item.path}" ${isChecked ? 'checked' : ''}
+          <div class="browse-row flex items-center justify-between border-b border-surface-border/30 ${isChecked ? 'selected' : ''} hover:bg-white/5 transition-colors" data-browse-path="${item.path}">
+            <div class="flex items-center gap-4 px-4 py-3 min-w-0 grow">
+              <!-- Checkbox (explicit selection) -->
+              <input type="checkbox" class="cb-folder cursor-pointer w-4 h-4 rounded appearance-none border-2 border-slate-600 bg-surface/50 text-accent checked:bg-accent checked:border-accent transition-all hover:border-accent/50 shrink-0" 
+                id="cb-${item.path}" ${isChecked ? 'checked' : ''}
                 onchange="toggleCheck('${escapedPath}')" />
-              <svg class="w-5 h-5 text-amber-400/70 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
-              </svg>
-              <span class="text-sm text-slate-300 truncate">${item.name}</span>
-            </label>
-            <!-- Navigate arrow (go inside folder) -->
-            <button onclick="browseTo('${escapedPath}')" class="btn-navigate px-4 py-3 text-slate-500 hover:text-accent transition-colors" title="Open folder">
+                
+              <!-- Navigate area (Clicking name/icon navigates inside) -->
+              <div class="flex items-center gap-2 cursor-pointer grow min-w-0 select-none group" onclick="browseTo('${escapedPath}')">
+                <svg class="w-5 h-5 text-amber-400/80 group-hover:text-amber-300 transition-colors shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path>
+                </svg>
+                <span class="text-sm font-medium text-slate-300 truncate group-hover:text-white transition-colors">${item.name}</span>
+              </div>
+            </div>
+
+            <!-- Navigate arrow visual cue -->
+            <button onclick="browseTo('${escapedPath}')" class="px-4 py-3 text-slate-500 hover:text-accent transition-colors shrink-0" title="Mở thư mục">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
               </svg>
             </button>
           </div>`;
