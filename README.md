@@ -1,63 +1,79 @@
-# 🚀 GitManage Dashboard
+# 🌌 GitManage — Workspace Orchestrator (v1.1.0)
 
-**GitManage Dashboard** là một công cụ quản lý hàng loạt repository Git trực quan, hiện đại, được thiết kế để giải quyết các vấn đề trong môi trường Microservices hoặc các dự án có cấu trúc phức tạp.
+> **GitManage Dashboard** là một công cụ quản lý hàng loạt repository Git trực quan, hiện đại, được thiết kế chuyên biệt để giải quyết các thách thức trong môi trường **Microservices** hoặc các dự án có cấu trúc monorepo phân tán phức tạp.
 
----
-
-## ✨ Tính năng nổi bật
-
-- **🔍 Global Code Search**: Tìm kiếm mã nguồn xuyên suốt tất cả các repositories trong workspace bằng sức mạnh của `git grep`. Hỗ trợ: *Match Case*, *Whole Word*, *Regex*.
-- **🕸️ Git Graph Visualizer**: Xem biểu đồ lịch sử Git trực quan (SVG) với sơ đồ branch, merge commit và các nhãn (Tag/Branch) ngay trên dashboard.
-- **⚔️ Smart Conflict Resolver**: Tự động phát hiện các repository đang gặp xung đột merge. Cung cấp danh sách file lỗi và phím tắt mở nhanh thư mục giải quyết.
-- **⚡ Bulk Actions**: Thực hiện đồng loạt `Fetch`, `Pull`, `Check Health` cho toàn bộ các repos chỉ bằng 1 cú click.
-- **🎨 Modern UI/UX**: Giao diện phong cách **Glassmorphism**, mượt mà, hỗ trợ Dark Mode và các hiệu ứng tương tác cao cấp.
+![Giao diện Glassmorphism Cực Đỉnh](https://img.shields.io/badge/UI-Glassmorphism-purple?style=flat-square) ![Phiên bản](https://img.shields.io/badge/Version-v1.1.0-emerald?style=flat-square) ![Node.js](https://img.shields.io/badge/Node.js-Backend-blue?style=flat-square) ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v3.0+-06B6D4?style=flat-square)
 
 ---
 
-## 🛠️ Yêu cầu hệ thống
+## ✨ Tính năng Nâng cao (Pro Max Features)
+
+### 📂 Quản lý Workspace Thông minh
+- **Quét Tự động đa thư mục (Multi-select)**: Hỗ trợ pop-up duyệt và đánh dấu cùng lúc nhiều thư mục dự án con. 
+- **Nhập Đường dẫn Trực tiếp (Direct Path)**: Nhập nhanh đường dẫn tuyệt đối để thêm trực tiếp repo mà không cần mở thư mục (hỗ trợ kiểm tra trùng lặp thông minh *case-insensitive* trên Windows).
+
+### ⚡ Hành động Hàng loạt (Bulk Actions)
+Thay vì dùng terminal vào từng repo, thực hiện thao tác cho hàng tá services với 1 thao tác duy nhất:
+- **`Pull` / `Push`**: Đồng bộ code lên/từ remote server.
+- **`Stash` / `Pop`**: Cất giữ hoặc khôi phục thay đổi tạm thời.
+- **`Commit` Modal Thông minh**: Tự động liệt kê các file Modified/Deleted trước khi commit để tránh nhầm lẫn.
+
+### 🔍 Global Code Search & Status Filtering
+- **Bộ lọc Trạng thái Tức thời**: Xem ngay những repo nào đang `🟢 Clean`, `🟡 Modified`, `⬇️ Behind`, `⬆️ Ahead` hoặc `🔴 Error`.
+- **Thanh tìm kiếm (Search)**: Lọc nhanh các microservice theo tên, branch, hoặc môi trường (dev, staging, prod).
+
+### 🎨 Giao diện "Premium" (Modern UI/UX)
+- Thiết kế **Glassmorphism**, làm mờ nền (backdrop-blur) với các thẻ (cards) nổi.
+- **Dark Mode** mặc định bảo vệ mắt, kết hợp ánh sáng Ambient Glow tinh tế.
+- Các hiệu ứng chuyển động (*Micro-animations*) mượt mà, phản hồi tức thì qua hệ thống Toast notifications không gây gián đoạn công việc.
+
+---
+
+## 🛠️ Yêu cầu Hệ thống
 
 Hệ thống của bạn cần được cài đặt sẵn:
 - **Node.js** (Phiên bản 18 trở lên)
-- **Git** (Hỗ trợ tốt nhất trên Windows/Linux/macOS)
+- **Git** được cấu hình biến môi trường toàn cầu. (Khuyến nghị dùng trên Windows, Linux hoặc macOS).
 
 ---
 
 ## 🚀 Hướng dấn Cài đặt & Khởi động
 
-Chỉ mất đúng 3 bước để bắt đầu:
+Chỉ mất đúng 3 bước để khởi chạy hệ thống quản lý siêu tốc:
 
-1. **Tải về & Chuyển vào thư mục dự án:**
+1. **Di chuyển vào thư mục dự án:**
    ```bash
    cd gitmanage
    ```
 
-2. **Cài đặt các thư viện cần thiết (Dependencies):**
+2. **Cài đặt các thư viện phụ thuộc (Dependencies):**
    ```bash
    npm install
    ```
 
-3. **Khởi chạy ứng dụng:**
+3. **Khởi chạy máy chủ (Server):**
    ```bash
    npm start
    ```
 
-Sau khi chạy lệnh trên, hãy mở trình duyệt và truy cập: [http://localhost:3000](http://localhost:3000)
+Sau khi Terminal báo `🚀 GitManage server running at http://localhost:3000`, hãy mở trình duyệt và truy cập: [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## 💡 Cách sử dụng
+## 💡 Hướng dẫn Sử dụng Nhanh
 
-1. **Thêm Workspace**: Nhấn nút `ADD WORKSPACE` ở góc phải để chọn thư mục chứa các dự án Git của bạn. Hệ thống sẽ tự động quét và thêm vào danh sách.
-2. **Xem Git Graph**: Nhấn vào **Tên Repository** trong bảng để mở biểu đồ lịch sử Git.
-3. **Tìm kiếm toàn cục**: Nhấn nút `Global Search` ở góc trên cùng bên phải để mở thanh tìm kiếm code.
-4. **Xử lý Conflict**: Khi một hàng có badge màu đỏ `⚔️ Conflict`, hãy nhấn vào đó để xem danh sách file bị lỗi.
-
----
-
-## 📦 Công nghệ sử dụng
-
-- **Backend**: Node.js, Express, `simple-git`.
-- **Frontend**: Vanilla JavaScript (ES6+), CSS (Tailwind CDN), SVG Graphics.
+1. **Thêm Workspace**: Nhấn nút `+ Add Folder` ở góc phải trên. Bạn có thể duyệt cây thư mục hoặc gõ trực tiếp đường dẫn gốc vào ô input và nhấn Enter.
+2. **Chọn Repos**: Tích chọn checkbox vào các repo bạn muốn thao tác (hoặc dùng nút Select All).
+3. **Thao tác Đồng loạt**: Sử dụng thanh công cụ Bulk Actions (có các biểu tượng thư mục, cloud, download, upload trên bảng) để `Stash`, `Pop`, `Pull`, `Push`.
+4. **Viết Commit Cẩn thận**: Bấm vào label trạng thái `Modified` màu vàng của Repo để mở Modal Commit, kiểm tra danh sách file và nhập Message trước khi xác nhận.
 
 ---
-*Phát triển bởi Wanda Scarlet - Antigravity Orchestrator* 🛡️
+
+## 📦 Kiến trúc Công nghệ
+
+- **Backend**: Node.js, Express, `simple-git` để thao tác CLI nhẹ nhàng.
+- **Frontend**: Vanilla JavaScript (ES6+) không cần bundler rườm rà.
+- **Styling**: TailwindCSS (CDN) tối ưu hóa kích thước DOM và tốc độ render bằng Utility Classes.
+
+---
+*Được thiết kế và kiến trúc bởi đội ngũ Antigravity Engine* 🛡️

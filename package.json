@@ -1,6 +1,6 @@
 {
   "name": "gitmanage",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Git repository management dashboard với tính năng Global Search và Git Graph trực quan.",
   "type": "module",
   "author": "GitManage Team",
