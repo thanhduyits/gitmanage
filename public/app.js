@@ -163,6 +163,9 @@
 
     let selectedRepoPaths = new Set();
 
+    // B1: Sorting state
+    let currentSort = { column: null, direction: 'asc' };
+
     function renderRepoRowInner(repo, i) {
       const wsLabel = repo.workspace ? repo.workspace.split(/[/\\]/).pop() : '';
       const escapedPath = repo.path.replace(/\\/g, '\\\\');
@@ -182,8 +185,17 @@
               </svg>
             </div>
             <div class="min-w-0">
-              <p class="text-[14px] sm:text-[15px] font-semibold text-slate-200 tracking-tight leading-snug cursor-pointer hover:text-accent transition-colors w-fit truncate" onclick="openGraphModal('${escapedPath}', '${repo.name}')" title="Xem Git Graph">${repo.name}</p>
-              <p class="text-[11px] sm:text-[12px] text-slate-500 font-mono tracking-tight truncate max-w-[150px] sm:max-w-[200px]" title="${repo.path}">${wsLabel ? '<span class="text-accent/50">' + wsLabel + '/</span>' : ''}${repo.name}</p>
+              <p class="text-[14px] sm:text-[15px] font-semibold text-slate-200 tracking-tight leading-snug cursor-pointer hover:text-accent transition-colors w-fit truncate" onclick="openGraphModal('${escapedPath}', '${repo.name}')" title="${repo.remoteUrl || repo.path}">${repo.name}</p>
+              <p class="text-[11px] sm:text-[12px] text-slate-500 font-mono tracking-tight truncate max-w-[150px] sm:max-w-[200px]" title="${repo.remoteUrl || repo.path}">${(() => {
+                if (repo.remoteUrl) {
+                  const httpUrl = repo.remoteUrl.startsWith('git@') 
+                    ? repo.remoteUrl.replace(/^git@([^:]+):/, 'https://$1/').replace(/\.git$/, '') 
+                    : repo.remoteUrl.replace(/\.git$/, '');
+                  const shortName = repo.remoteUrl.replace(/^.*[:/]([^/]+\/[^/]+?)(?:\.git)?$/, '$1');
+                  return '<a href="' + httpUrl + '" target="_blank" rel="noopener" class="hover:text-accent transition-colors" onclick="event.stopPropagation()">' + shortName + '</a>';
+                }
+                return (wsLabel ? '<span class="text-accent/50">' + wsLabel + '/</span>' : '') + repo.name;
+              })()}</p>
             </div>
           </div>
         </td>
@@ -612,17 +624,185 @@
       }
     }
 
-    // Keyboard: ESC to close modal
+    // Keyboard: ESC to close any open modal (priority: topmost first)
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !browserModal.classList.contains('hidden')) {
-        closeBrowser();
+      if (e.key === 'Escape') {
+        const confirmModal = document.getElementById('confirm-modal');
+        if (confirmModal && !confirmModal.classList.contains('hidden')) return; // Confirm modal has own handlers
+        
+        const commitModal = document.getElementById('commit-modal');
+        if (commitModal && !commitModal.classList.contains('hidden')) { window.closeCommitModal(); return; }
+        
+        const branchModal = document.getElementById('branch-modal');
+        if (branchModal && !branchModal.classList.contains('hidden')) { closeBranchModal(); return; }
+        
+        const conflictModal = document.getElementById('conflict-modal');
+        if (conflictModal && !conflictModal.classList.contains('hidden')) { closeConflictModal(); return; }
+        
+        const graphModal = document.getElementById('graph-modal');
+        if (graphModal && !graphModal.classList.contains('hidden')) { closeGraphModal(); return; }
+        
+        if (!browserModal.classList.contains('hidden')) { closeBrowser(); return; }
+        
+        // Close sidebars
+        const searchSidebar = document.getElementById('search-sidebar');
+        if (searchSidebar && !searchSidebar.classList.contains('translate-x-full')) { toggleSearch(); return; }
+        
+        const timelineSidebar = document.getElementById('timeline-sidebar');
+        if (timelineSidebar && !timelineSidebar.classList.contains('translate-x-full')) { toggleTimeline(); return; }
       }
     });
+
+    // B2: Global keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      // Skip if user is typing in an input/textarea
+      const tag = (e.target.tagName || '').toLowerCase();
+      const isTyping = tag === 'input' || tag === 'textarea' || tag === 'select' || e.target.isContentEditable;
+      
+      // Ctrl+K or / → Focus repo search (works even when typing)
+      if ((e.ctrlKey && e.key === 'k') || (!isTyping && e.key === '/')) {
+        e.preventDefault();
+        const searchInput = document.getElementById('repo-search');
+        if (searchInput) { searchInput.focus(); searchInput.select(); }
+        return;
+      }
+      
+      // Ctrl+Shift+F → Open Global Search sidebar
+      if (e.ctrlKey && e.shiftKey && e.key === 'F') {
+        e.preventDefault();
+        toggleSearch();
+        return;
+      }
+
+      // Single-key shortcuts only when NOT typing
+      if (isTyping) return;
+      
+      // R → Refresh all repos
+      if (e.key === 'r' || e.key === 'R') {
+        e.preventDefault();
+        loadRepos(true);
+        return;
+      }
+      
+      // T → Toggle Timeline
+      if (e.key === 't' || e.key === 'T') {
+        e.preventDefault();
+        toggleTimeline();
+        return;
+      }
+    });
+
+    // B3: Dark / Light theme toggle
+    function initTheme() {
+      const savedTheme = localStorage.getItem('gitmanage_theme') || 'dark';
+      const html = document.documentElement;
+      if (savedTheme === 'light') {
+        html.classList.remove('dark');
+        html.classList.add('light');
+      } else {
+        html.classList.remove('light');
+        html.classList.add('dark');
+      }
+      updateThemeIcon();
+    }
+
+    window.toggleTheme = function() {
+      const html = document.documentElement;
+      const isLight = html.classList.contains('light');
+      if (isLight) {
+        html.classList.remove('light');
+        html.classList.add('dark');
+        localStorage.setItem('gitmanage_theme', 'dark');
+      } else {
+        html.classList.remove('dark');
+        html.classList.add('light');
+        localStorage.setItem('gitmanage_theme', 'light');
+      }
+      updateThemeIcon();
+    };
+
+    function updateThemeIcon() {
+      const isLight = document.documentElement.classList.contains('light');
+      const moon = document.getElementById('theme-icon-moon');
+      const sun = document.getElementById('theme-icon-sun');
+      if (moon) moon.classList.toggle('hidden', isLight);
+      if (sun) sun.classList.toggle('hidden', !isLight);
+    }
+
+    // Init theme on load
+    initTheme();
+
+    // --- Auto-Refresh / Polling ---
+    let autoRefreshInterval = null;
+    let autoRefreshEnabled = localStorage.getItem('gitmanage_autorefresh') === 'true';
+    const AUTO_REFRESH_MS = 30_000; // 30 seconds
+
+    function toggleAutoRefresh() {
+      autoRefreshEnabled = !autoRefreshEnabled;
+      localStorage.setItem('gitmanage_autorefresh', autoRefreshEnabled);
+      updateAutoRefreshUI();
+
+      if (autoRefreshEnabled) {
+        startAutoRefresh();
+        showToast('Auto-refresh đã bật (30s)', 'info');
+      } else {
+        stopAutoRefresh();
+        showToast('Auto-refresh đã tắt', 'info');
+      }
+    }
+
+    function startAutoRefresh() {
+      stopAutoRefresh();
+      autoRefreshInterval = setInterval(async () => {
+        // Only refresh when no modal is open
+        const anyModalOpen = ['commit-modal', 'branch-modal', 'conflict-modal', 'graph-modal', 'browser-modal', 'confirm-modal']
+          .some(id => { const m = document.getElementById(id); return m && !m.classList.contains('hidden'); });
+        if (anyModalOpen) return;
+
+        try {
+          const url = '/api/repos';
+          const response = await fetch(url);
+          if (!response.ok) return;
+          const repos = await response.json();
+          if (repos.error) return;
+          currentRepos = repos;
+          if (currentRepos.length) {
+            updateStats(currentRepos);
+            filterReposText();
+          }
+        } catch { /* silent fail for background refresh */ }
+      }, AUTO_REFRESH_MS);
+    }
+
+    function stopAutoRefresh() {
+      if (autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+      }
+    }
+
+    function updateAutoRefreshUI() {
+      const btn = document.getElementById('btn-auto-refresh');
+      if (!btn) return;
+      const dot = btn.querySelector('.auto-refresh-dot');
+      if (autoRefreshEnabled) {
+        btn.classList.add('!border-emerald-500/40', '!bg-emerald-500/10');
+        btn.classList.remove('!border-surface-border');
+        if (dot) { dot.classList.remove('bg-slate-600'); dot.classList.add('bg-emerald-400'); dot.style.animation = 'pulse-dot 2s ease-in-out infinite'; }
+      } else {
+        btn.classList.remove('!border-emerald-500/40', '!bg-emerald-500/10');
+        btn.classList.add('!border-surface-border');
+        if (dot) { dot.classList.add('bg-slate-600'); dot.classList.remove('bg-emerald-400'); dot.style.animation = 'none'; }
+      }
+    }
 
     // --- Init ---
     (async () => {
       await loadWorkspaces();
       await loadRepos();
+      // Start auto-refresh if previously enabled
+      updateAutoRefreshUI();
+      if (autoRefreshEnabled) startAutoRefresh();
     })();
     // ===== BULK ACTIONS & FILTERING =====
     function filterReposText() {
@@ -651,8 +831,74 @@
         }
         return true;
       });
+
+      // B1: Apply sorting if active
+      if (currentSort.column) {
+        filtered.sort((a, b) => {
+          let valA, valB;
+          switch (currentSort.column) {
+            case 'name':
+              valA = (a.name || '').toLowerCase();
+              valB = (b.name || '').toLowerCase();
+              break;
+            case 'branch':
+              valA = (a.branch || '').toLowerCase();
+              valB = (b.branch || '').toLowerCase();
+              break;
+            case 'status':
+              valA = getStatusWeight(a);
+              valB = getStatusWeight(b);
+              break;
+            default:
+              return 0;
+          }
+          if (valA < valB) return currentSort.direction === 'asc' ? -1 : 1;
+          if (valA > valB) return currentSort.direction === 'asc' ? 1 : -1;
+          return 0;
+        });
+      }
+
       renderRepos(filtered);
       updateSelectionUI();
+    }
+
+    // Status weight for sorting (dirty first, then behind, then ahead, then clean)
+    function getStatusWeight(repo) {
+      if (repo.error) return 5;
+      if (!repo.status) return 4;
+      if (repo.status.conflicted && repo.status.conflicted.length > 0) return 0;
+      if (!repo.status.isClean) return 1;
+      if (repo.status.behind > 0) return 2;
+      if (repo.status.ahead > 0) return 3;
+      return 6; // clean = last
+    }
+
+    // B1: Sort repos by column header click
+    window.sortRepos = function(column) {
+      if (currentSort.column === column) {
+        // Toggle direction or reset
+        if (currentSort.direction === 'asc') currentSort.direction = 'desc';
+        else { currentSort.column = null; currentSort.direction = 'asc'; }
+      } else {
+        currentSort.column = column;
+        currentSort.direction = 'asc';
+      }
+      updateSortHeaderUI();
+      filterReposText();
+    };
+
+    function updateSortHeaderUI() {
+      document.querySelectorAll('.th-sortable').forEach(th => {
+        const col = th.dataset.sort;
+        const icon = th.querySelector('.sort-icon');
+        if (col === currentSort.column) {
+          th.classList.add('active');
+          if (icon) icon.textContent = currentSort.direction === 'asc' ? '▲' : '▼';
+        } else {
+          th.classList.remove('active');
+          if (icon) icon.textContent = '▲▼';
+        }
+      });
     }
     
     // Kept for retro compatibility with older oninput reference
@@ -1079,13 +1325,28 @@
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
       
-      let icon = '';
-      if (type === 'success') toast.className = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-4 py-3.5 rounded-xl shadow-lg shadow-black/30 backdrop-blur-md flex items-start gap-3 w-80 translate-y-2 opacity-0 transition-all duration-300 pointer-events-auto';
-      else if (type === 'error') toast.className = 'bg-red-500/10 text-red-400 border border-red-500/20 px-4 py-3.5 rounded-xl shadow-lg shadow-black/30 backdrop-blur-md flex items-start gap-3 w-80 translate-y-2 opacity-0 transition-all duration-300 pointer-events-auto';
-      else if (type === 'warning') toast.className = 'bg-amber-500/10 text-amber-400 border border-amber-500/20 px-4 py-3.5 rounded-xl shadow-lg shadow-black/30 backdrop-blur-md flex items-start gap-3 w-80 translate-y-2 opacity-0 transition-all duration-300 pointer-events-auto';
+      const styleMap = {
+        success: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
+        error:   'bg-red-500/10 text-red-400 border border-red-500/20',
+        warning: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
+        info:    'bg-sky-500/10 text-sky-400 border border-sky-500/20',
+      };
+      const iconMap = {
+        success: 'M5 13l4 4L19 7',
+        error:   'M6 18L18 6M6 6l12 12',
+        warning: 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z',
+        info:    'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+      };
+      const titleMap = {
+        success: 'Thành công',
+        error:   'Lỗi hệ thống',
+        warning: 'Cảnh báo',
+        info:    'Thông tin',
+      };
       
-      const iconPath = type === 'success' ? 'M5 13l4 4L19 7' : (type === 'error' ? 'M6 18L18 6M6 6l12 12' : 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z');
-      const title = type === 'success' ? 'Thành công' : (type === 'error' ? 'Lỗi hệ thống' : 'Cảnh báo');
+      toast.className = `${styleMap[type] || styleMap.info} px-4 py-3.5 rounded-xl shadow-lg shadow-black/30 backdrop-blur-md flex items-start gap-3 w-80 translate-y-2 opacity-0 transition-all duration-300 pointer-events-auto`;
+      const iconPath = iconMap[type] || iconMap.info;
+      const title = titleMap[type] || titleMap.info;
       
       toast.innerHTML = `
         <svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPath}"/></svg>
@@ -1102,10 +1363,11 @@
         toast.classList.remove('translate-y-2', 'opacity-0');
       });
       
+      const duration = type === 'error' ? 8000 : (type === 'info' ? 3000 : 5000);
       setTimeout(() => {
         toast.classList.add('opacity-0', 'translate-y-2');
         setTimeout(() => toast.remove(), 300);
-      }, type === 'error' ? 8000 : 5000); // Lỗi hiện lâu hơn (8s).
+      }, duration);
     }
 
     // --- Conflict Modal Logic ---
@@ -1473,6 +1735,7 @@
 
     // --- Commit Modal ---
     let commitModalContext = { path: null, workspace: null, rowIndex: null };
+    let commitSelectedFiles = new Set();
 
     window.openCommitModal = function(repoPath, wsPath, rowIndex) {
       commitModalContext = { path: repoPath, workspace: wsPath, rowIndex };
@@ -1481,16 +1744,47 @@
       const input = document.getElementById('commit-message');
       
       if (input) input.value = '';
+      commitSelectedFiles.clear();
       
-      // Populate modified file list
+      // Populate modified file list with checkboxes (Selective Staging)
       const fileList = document.getElementById('commit-file-list');
       if (fileList) {
         const repo = currentRepos.find(r => r.path === repoPath);
         if (repo && repo.status) {
-          const allFiles = [...(repo.status.modified || []), ...(repo.status.deleted || []), ...(repo.status.not_added || [])];
-          fileList.innerHTML = allFiles.map(f => `<div class="px-2 py-1 rounded-lg bg-white/5 text-amber-300/80">${f}</div>`).join('') || '<div class="text-slate-500 px-2">No changes detected</div>';
+          const modifiedFiles = (repo.status.modified || []).map(f => ({ file: f, type: 'M' }));
+          const deletedFiles = (repo.status.deleted || []).map(f => ({ file: f, type: 'D' }));
+          const newFiles = (repo.status.not_added || []).map(f => ({ file: f, type: 'A' }));
+          const allFiles = [...modifiedFiles, ...deletedFiles, ...newFiles];
+          
+          if (allFiles.length === 0) {
+            fileList.innerHTML = '<div class="text-slate-500 px-2 py-2 text-center italic">No changes detected</div>';
+          } else {
+            // Select all by default
+            allFiles.forEach(f => commitSelectedFiles.add(f.file));
+            
+            const typeColors = { M: 'text-amber-400 bg-amber-500/20', D: 'text-red-400 bg-red-500/20', A: 'text-emerald-400 bg-emerald-500/20' };
+            const typeLabels = { M: 'MOD', D: 'DEL', A: 'NEW' };
+            
+            let headerHtml = `<div class="flex items-center justify-between px-2 py-1.5 border-b border-white/5 mb-1">
+              <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-400 hover:text-white transition-colors select-none">
+                <input type="checkbox" id="commit-select-all" checked onchange="toggleCommitSelectAll(this.checked)" class="cb-folder w-3.5 h-3.5 rounded">
+                <span>Chọn tất cả (${allFiles.length} files)</span>
+              </label>
+            </div>`;
+            
+            fileList.innerHTML = headerHtml + allFiles.map(f => {
+              const safeFile = f.file.replace(/'/g, "\\'");
+              return `<label class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5 cursor-pointer transition-colors group commit-file-item" data-file="${f.file}">
+                <input type="checkbox" checked onchange="toggleCommitFile('${safeFile}', this.checked)" class="cb-folder w-3.5 h-3.5 rounded commit-file-cb shrink-0">
+                <span class="px-1.5 py-[1px] rounded text-[10px] font-bold ${typeColors[f.type]} shrink-0">${typeLabels[f.type]}</span>
+                <span class="text-[12px] font-mono text-slate-300 truncate group-hover:text-white transition-colors">${f.file}</span>
+              </label>`;
+            }).join('');
+          }
         }
       }
+
+      updateCommitButtons();
       
       modal.classList.remove('hidden');
       void modal.offsetWidth;
@@ -1502,6 +1796,44 @@
       
       setTimeout(() => input.focus(), 200);
     };
+
+    window.toggleCommitFile = function(file, checked) {
+      if (checked) commitSelectedFiles.add(file);
+      else commitSelectedFiles.delete(file);
+      
+      // Update "select all" checkbox state
+      const allCbs = document.querySelectorAll('.commit-file-cb');
+      const selectAllCb = document.getElementById('commit-select-all');
+      if (selectAllCb) {
+        const allChecked = Array.from(allCbs).every(cb => cb.checked);
+        const someChecked = Array.from(allCbs).some(cb => cb.checked);
+        selectAllCb.checked = allChecked;
+        selectAllCb.indeterminate = someChecked && !allChecked;
+      }
+      updateCommitButtons();
+    };
+
+    window.toggleCommitSelectAll = function(checked) {
+      const allCbs = document.querySelectorAll('.commit-file-cb');
+      allCbs.forEach(cb => {
+        cb.checked = checked;
+        const item = cb.closest('.commit-file-item');
+        const file = item?.dataset?.file;
+        if (file) {
+          if (checked) commitSelectedFiles.add(file);
+          else commitSelectedFiles.delete(file);
+        }
+      });
+      updateCommitButtons();
+    };
+
+    function updateCommitButtons() {
+      const btnCommit = document.getElementById('btn-commit-action');
+      const btnCommitPush = document.getElementById('btn-commit-push-action');
+      const hasFiles = commitSelectedFiles.size > 0;
+      if (btnCommit) btnCommit.disabled = !hasFiles;
+      if (btnCommitPush) btnCommitPush.disabled = !hasFiles;
+    }
 
     window.closeCommitModal = function() {
       const modal = document.getElementById('commit-modal');
@@ -1515,7 +1847,18 @@
       setTimeout(() => modal.classList.add('hidden'), 200);
     };
 
-    window.executeCommit = async function() {
+    // Ctrl+Enter shortcut for commit
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        const commitModal = document.getElementById('commit-modal');
+        if (commitModal && !commitModal.classList.contains('hidden')) {
+          e.preventDefault();
+          window.executeCommit(false);
+        }
+      }
+    });
+
+    window.executeCommit = async function(andPush = false) {
       const input = document.getElementById('commit-message');
       const msg = (input && input.value) ? input.value.trim() : '';
       if (!msg) {
@@ -1524,13 +1867,24 @@
         return;
       }
       
-      const btn = document.getElementById('btn-commit-action');
-      let originalText = '';
-      if (btn) {
-        originalText = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = `<svg class="w-4 h-4 spin mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>`;
+      if (commitSelectedFiles.size === 0) {
+        showToast('Vui lòng chọn ít nhất 1 file để commit!', 'warning');
+        return;
       }
+      
+      // Disable both buttons during operation
+      const btnCommit = document.getElementById('btn-commit-action');
+      const btnCommitPush = document.getElementById('btn-commit-push-action');
+      const activeBtn = andPush ? btnCommitPush : btnCommit;
+      let originalText = '';
+      
+      if (activeBtn) {
+        originalText = activeBtn.innerHTML;
+        activeBtn.disabled = true;
+        activeBtn.innerHTML = `<svg class="w-4 h-4 spin mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>`;
+      }
+      if (btnCommit && btnCommit !== activeBtn) btnCommit.disabled = true;
+      if (btnCommitPush && btnCommitPush !== activeBtn) btnCommitPush.disabled = true;
       
       const { path, workspace, rowIndex } = commitModalContext;
       const tr = document.getElementById('repo-row-' + rowIndex);
@@ -1542,17 +1896,19 @@
       }
 
       try {
+        const files = Array.from(commitSelectedFiles);
         const res = await fetch('/api/repo/commit', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ path, workspace, message: msg })
+          body: JSON.stringify({ path, workspace, message: msg, files, push: andPush })
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Commit thất bại');
         
         window.closeCommitModal();
-        let repoName = path.replace(/\\/g, '/').split('/').filter(Boolean).pop();
-        showToast(`Commit thành công: ${repoName}`, 'success');
+        let repoName = path.replace(/\\\\/g, '/').split('/').filter(Boolean).pop();
+        const action = andPush ? 'Commit & Push' : 'Commit';
+        showToast(`${action} thành công: ${repoName}`, 'success');
         
         // Update local object & re-render
         const originalIndex = currentRepos.findIndex(r => r.path === path);
@@ -1564,12 +1920,14 @@
           tr.innerHTML = renderRepoRowInner(data.repo, rowIndex);
         }
       } catch (err) {
-        showToast(`Commit thất bại:\\n${err.message}`, 'error');
+        showToast(`Commit thất bại:\n${err.message}`, 'error');
       } finally {
-        if(btn) {
-          btn.disabled = false;
-          btn.innerHTML = originalText;
+        if(activeBtn) {
+          activeBtn.disabled = false;
+          activeBtn.innerHTML = originalText;
         }
+        if (btnCommit) btnCommit.disabled = false;
+        if (btnCommitPush) btnCommitPush.disabled = false;
         if (refreshBtn) refreshBtn.classList.remove('spin');
       }
     };

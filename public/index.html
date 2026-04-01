@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -39,29 +40,113 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
 
   <style>
-    body { background: #0b0c10; color: #e2e8f0; overflow-x: hidden; }
-
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #2a2d3e; border-radius: 999px; }
-    ::-webkit-scrollbar-thumb:hover { background: #3a3d4e; }
-
-    .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 8px;}
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 8px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
-
-    .row-glow:hover {
-      background: linear-gradient(90deg, rgba(99,102,241,0.04) 0%, rgba(99,102,241,0.08) 50%, rgba(99,102,241,0.04) 100%);
+    :root {
+      --bg-body: #0b0c10;
+      --text-body: #e2e8f0;
+      --bg-surface: #0f1117;
+      --bg-card: #161922;
+      --bg-hover: #1c1f2e;
+      --border-color: #2a2d3e;
+      --scrollbar-thumb: #2a2d3e;
+      --scrollbar-hover: #3a3d4e;
+      --glass-bg: rgba(22, 25, 34, 0.6);
+      --row-hover: rgba(255, 255, 255, 0.02);
+      --glow-opacity: 1;
     }
 
-    @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.5} }
-    .badge-pulse { animation: pulse-dot 2s ease-in-out infinite; }
+    html.light {
+      --bg-body: #f1f5f9;
+      --text-body: #1e293b;
+      --bg-surface: #f8fafc;
+      --bg-card: #ffffff;
+      --bg-hover: #e2e8f0;
+      --border-color: #cbd5e1;
+      --scrollbar-thumb: #cbd5e1;
+      --scrollbar-hover: #94a3b8;
+      --glass-bg: rgba(255, 255, 255, 0.7);
+      --row-hover: rgba(0, 0, 0, 0.02);
+      --glow-opacity: 0;
+    }
 
-    @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+    body {
+      background: var(--bg-body);
+      color: var(--text-body);
+      overflow-x: hidden;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--scrollbar-thumb);
+      border-radius: 999px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--scrollbar-hover);
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .row-glow:hover {
+      background: linear-gradient(90deg, rgba(99, 102, 241, 0.04) 0%, rgba(99, 102, 241, 0.08) 50%, rgba(99, 102, 241, 0.04) 100%);
+    }
+
+    @keyframes pulse-dot {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .5
+      }
+    }
+
+    .badge-pulse {
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0
+      }
+
+      100% {
+        background-position: 200% 0
+      }
+    }
+
     .skeleton {
       background: linear-gradient(90deg, #1c1f2e 25%, #252838 50%, #1c1f2e 75%);
       background-size: 200% 100%;
@@ -69,53 +154,123 @@
       border-radius: 6px;
     }
 
-    @keyframes fadeInUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-    .fade-in-up { animation: fadeInUp .4s ease-out forwards; opacity: 0; }
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px)
+      }
 
-    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-    .fade-in { animation: fadeIn .2s ease-out forwards; }
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
 
-    @keyframes slideUp { from{opacity:0;transform:translateY(24px) scale(.96)} to{opacity:1;transform:translateY(0) scale(1)} }
-    .slide-up { animation: slideUp .3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .fade-in-up {
+      animation: fadeInUp .4s ease-out forwards;
+      opacity: 0;
+    }
 
-    @keyframes spin { to{transform:rotate(360deg)} }
-    .spin { animation: spin 1s linear infinite; }
+    @keyframes fadeIn {
+      from {
+        opacity: 0
+      }
+
+      to {
+        opacity: 1
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn .2s ease-out forwards;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px) scale(.96)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1)
+      }
+    }
+
+    .slide-up {
+      animation: slideUp .3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    .spin {
+      animation: spin 1s linear infinite;
+    }
 
     /* --- SaaS Magic UI Styles --- */
     .ambient-glow-1 {
       position: fixed;
-      top: -15vw; left: -10vw;
-      width: 50vw; height: 50vw;
-      background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, rgba(0,0,0,0) 70%);
-      z-index: -1; pointer-events: none; border-radius: 50%;
+      top: -15vw;
+      left: -10vw;
+      width: 50vw;
+      height: 50vw;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
+      z-index: -1;
+      pointer-events: none;
+      border-radius: 50%;
+      opacity: var(--glow-opacity);
+      transition: opacity 0.3s;
     }
+
     .ambient-glow-2 {
       position: fixed;
-      bottom: -15vw; right: -10vw;
-      width: 60vw; height: 60vw;
-      background: radial-gradient(circle, rgba(168,85,247,0.1) 0%, rgba(0,0,0,0) 70%);
-      z-index: -1; pointer-events: none; border-radius: 50%;
+      bottom: -15vw;
+      right: -10vw;
+      width: 60vw;
+      height: 60vw;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
+      z-index: -1;
+      pointer-events: none;
+      border-radius: 50%;
+      opacity: var(--glow-opacity);
+      transition: opacity 0.3s;
     }
+
     .ambient-glow-3 {
       position: fixed;
-      top: 20vh; left: 40vw;
-      width: 40vw; height: 40vw;
-      background: radial-gradient(circle, rgba(14,165,233,0.05) 0%, rgba(0,0,0,0) 60%);
-      z-index: -1; pointer-events: none; border-radius: 50%;
+      top: 20vh;
+      left: 40vw;
+      width: 40vw;
+      height: 40vw;
+      background: radial-gradient(circle, rgba(14, 165, 233, 0.05) 0%, rgba(0, 0, 0, 0) 60%);
+      z-index: -1;
+      pointer-events: none;
+      border-radius: 50%;
     }
 
     .glass-card {
-      background: rgba(22, 25, 34, 0.6);
+      background: var(--glass-bg);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.05);
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      transition: background 0.3s;
     }
-    
+
+    html.light .glass-card {
+      border-color: var(--border-color);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
     .table-row-modern {
       transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       border-bottom: 1px solid rgba(255, 255, 255, 0.03);
     }
+
     .table-row-modern:hover {
       background: rgba(255, 255, 255, 0.02);
       transform: translateY(-2px);
@@ -129,32 +284,43 @@
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(255, 255, 255, 0.08);
       transition: all 0.2s ease;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
+
     .btn-linear:hover:not(:disabled) {
       background: rgba(255, 255, 255, 0.06);
       border-color: rgba(99, 102, 241, 0.4);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
       transform: translateY(-1px);
     }
+
     .btn-linear:active:not(:disabled) {
       transform: translateY(0);
       background: rgba(255, 255, 255, 0.02);
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
     .badge-glow {
       box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.05);
     }
 
-    .ws-chip { transition: all 0.2s ease; }
-    .ws-chip:hover { border-color: #ef4444; }
-    .ws-chip:hover .ws-remove { color: #ef4444; }
+    .ws-chip {
+      transition: all 0.2s ease;
+    }
+
+    .ws-chip:hover {
+      border-color: #ef4444;
+    }
+
+    .ws-chip:hover .ws-remove {
+      color: #ef4444;
+    }
 
     /* Custom checkbox */
     .cb-folder {
       appearance: none;
-      width: 18px; height: 18px;
+      width: 18px;
+      height: 18px;
       border: 2px solid #3a3d4e;
       border-radius: 5px;
       background: transparent;
@@ -162,7 +328,11 @@
       transition: all 0.15s ease;
       flex-shrink: 0;
     }
-    .cb-folder:hover { border-color: #6366f1; }
+
+    .cb-folder:hover {
+      border-color: #6366f1;
+    }
+
     .cb-folder:checked {
       background: #6366f1;
       border-color: #6366f1;
@@ -176,9 +346,11 @@
     .browse-row {
       transition: background 0.15s ease;
     }
+
     .browse-row:hover {
       background: #1c1f2e;
     }
+
     .browse-row.selected {
       background: rgba(99, 102, 241, 0.08);
     }
@@ -188,11 +360,80 @@
       opacity: 0.4;
       transition: all 0.15s ease;
     }
+
     .browse-row:hover .btn-navigate {
       opacity: 1;
     }
+
+    /* Light theme overrides */
+    html.light .table-row-modern {
+      border-bottom-color: #e2e8f0;
+    }
+
+    html.light .table-row-modern:hover {
+      background: rgba(99, 102, 241, 0.04);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    html.light .browse-row:hover {
+      background: #e2e8f0;
+    }
+
+    html.light .btn-linear {
+      background: rgba(0, 0, 0, 0.03);
+      border-color: #cbd5e1;
+    }
+
+    html.light .btn-linear:hover:not(:disabled) {
+      background: rgba(99, 102, 241, 0.08);
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+
+    /* Sortable header styles */
+    .th-sortable {
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+    }
+
+    .th-sortable:hover {
+      color: #818cf8;
+    }
+
+    .sort-icon {
+      display: inline-block;
+      margin-left: 4px;
+      font-size: 10px;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+    }
+
+    .th-sortable.active .sort-icon {
+      opacity: 1;
+      color: #6366f1;
+    }
+
+    /* Keyboard shortcut hints */
+    kbd {
+      display: inline-block;
+      padding: 1px 5px;
+      font-size: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      color: #94a3b8;
+      line-height: 1.6;
+    }
+
+    html.light kbd {
+      background: rgba(0, 0, 0, 0.06);
+      border-color: #cbd5e1;
+      color: #64748b;
+    }
   </style>
 </head>
+
 <body class="font-sans min-h-screen antialiased">
 
   <!-- Background Ambient Glows -->
@@ -201,18 +442,22 @@
   <div class="ambient-glow-3"></div>
 
   <!-- Header -->
-  <header class="sticky top-0 z-40 bg-surface/40 backdrop-blur-2xl border-b border-surface-border shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+  <header
+    class="sticky top-0 z-40 bg-surface/40 backdrop-blur-2xl border-b border-surface-border shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
     <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-purple-600 flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.4)] shadow-accent/20 border border-white/10 shrink-0">
+        <div
+          class="w-10 h-10 rounded-xl bg-gradient-to-br from-accent to-purple-600 flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.4)] shadow-accent/20 border border-white/10 shrink-0">
           <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+              d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
           </svg>
         </div>
         <div>
           <div class="flex items-center gap-2">
             <h1 class="text-xl font-bold text-white tracking-tight leading-tight">GitManage</h1>
-            <span class="px-1.5 py-0.5 rounded-md bg-accent/10 border border-accent/20 text-[9px] font-bold text-accent tracking-widest uppercase">v1.1.0</span>
+            <span
+              class="px-1.5 py-0.5 rounded-md bg-accent/10 border border-accent/20 text-[9px] font-bold text-accent tracking-widest uppercase">v1.2.1</span>
           </div>
           <p class="text-[13px] text-slate-400 font-medium">Workspace Orchestrator</p>
         </div>
@@ -220,16 +465,21 @@
 
       <div class="flex items-center gap-3">
         <div id="stats-bar" class="hidden items-center gap-2 mr-2">
-          <span id="stat-total" class="text-xs font-medium text-slate-400 bg-surface-card px-2.5 py-1 rounded-full border border-surface-border"></span>
-          <span id="stat-clean" class="text-xs font-medium text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20"></span>
-          <span id="stat-dirty" class="text-xs font-medium text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20"></span>
-          <span id="stat-conflict" class="hidden text-xs font-bold text-rose-400 bg-rose-500/10 px-2.5 py-1 rounded-full border border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.2)]"></span>
+          <span id="stat-total"
+            class="text-xs font-medium text-slate-400 bg-surface-card px-2.5 py-1 rounded-full border border-surface-border"></span>
+          <span id="stat-clean"
+            class="text-xs font-medium text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20"></span>
+          <span id="stat-dirty"
+            class="text-xs font-medium text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20"></span>
+          <span id="stat-conflict"
+            class="hidden text-xs font-bold text-rose-400 bg-rose-500/10 px-2.5 py-1 rounded-full border border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.2)]"></span>
         </div>
 
         <button id="btn-search" onclick="toggleSearch()"
           class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 border border-sky-500/20 hover:border-sky-500/40 transition-all duration-200 active:scale-95">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           Global Search
         </button>
@@ -237,7 +487,8 @@
         <button id="btn-timeline" onclick="toggleTimeline()"
           class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 border border-purple-500/20 hover:border-purple-500/40 transition-all duration-200 active:scale-95">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           Timeline
         </button>
@@ -250,10 +501,31 @@
           Add Folder
         </button>
 
+        <button id="btn-auto-refresh" onclick="toggleAutoRefresh()"
+          class="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg bg-surface-card text-slate-400 hover:text-white border !border-surface-border hover:!border-emerald-500/40 transition-all duration-200 active:scale-95"
+          title="Auto-Refresh (30s)">
+          <span class="auto-refresh-dot w-2 h-2 rounded-full bg-slate-600 transition-colors"></span>
+          Auto
+        </button>
+
+        <button id="btn-theme-toggle" onclick="toggleTheme()"
+          class="flex items-center justify-center w-9 h-9 rounded-lg bg-surface-card text-slate-400 hover:text-white border !border-surface-border hover:!border-amber-500/40 transition-all duration-200 active:scale-95"
+          title="Toggle Dark/Light Theme">
+          <svg id="theme-icon-moon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+          </svg>
+          <svg id="theme-icon-sun" class="w-4 h-4 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+        </button>
+
         <button id="btn-refresh" onclick="loadRepos(true)"
           class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-accent/10 text-accent hover:bg-accent/20 border border-accent/20 hover:border-accent/40 transition-all duration-200 active:scale-95">
           <svg id="refresh-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
           Refresh
         </button>
@@ -275,14 +547,16 @@
     <!-- Empty State: No Workspaces -->
     <div id="state-no-workspace" class="hidden">
       <div class="flex flex-col items-center justify-center py-24 text-center">
-        <div class="w-16 h-16 rounded-2xl bg-surface-card border border-surface-border flex items-center justify-center mb-5">
+        <div
+          class="w-16 h-16 rounded-2xl bg-surface-card border border-surface-border flex items-center justify-center mb-5">
           <svg class="w-8 h-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
         </div>
         <h3 class="text-lg font-semibold text-slate-300 mb-1">No workspaces configured</h3>
         <p class="text-sm text-slate-500 max-w-sm mb-5">
-          Click <strong class="text-emerald-400">Add Folder</strong> to browse and select folders containing your Git repositories.
+          Click <strong class="text-emerald-400">Add Folder</strong> to browse and select folders containing your Git
+          repositories.
         </p>
         <button onclick="openBrowser()"
           class="flex items-center gap-2 px-5 py-2.5 text-sm font-medium rounded-lg bg-accent text-white hover:bg-accent-hover transition-all duration-200 active:scale-95 shadow-lg shadow-accent/25">
@@ -297,13 +571,17 @@
     <!-- Empty State: No Repos Found -->
     <div id="state-empty" class="hidden">
       <div class="flex flex-col items-center justify-center py-24 text-center">
-        <div class="w-16 h-16 rounded-2xl bg-surface-card border border-surface-border flex items-center justify-center mb-5">
+        <div
+          class="w-16 h-16 rounded-2xl bg-surface-card border border-surface-border flex items-center justify-center mb-5">
           <svg class="w-8 h-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
           </svg>
         </div>
         <h3 class="text-lg font-semibold text-slate-300 mb-1">No repositories found</h3>
-        <p class="text-sm text-slate-500 max-w-sm">Your configured workspaces don't contain any Git repositories (folders with <code class="text-accent/80 bg-accent/10 px-1.5 py-0.5 rounded text-xs font-mono">.git</code>).</p>
+        <p class="text-sm text-slate-500 max-w-sm">Your configured workspaces don't contain any Git repositories
+          (folders with <code class="text-accent/80 bg-accent/10 px-1.5 py-0.5 rounded text-xs font-mono">.git</code>).
+        </p>
       </div>
     </div>
 
@@ -312,7 +590,8 @@
       <div class="flex flex-col items-center justify-center py-24 text-center">
         <div class="w-16 h-16 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-5">
           <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
           </svg>
         </div>
         <h3 class="text-lg font-semibold text-red-300 mb-1">Connection Error</h3>
@@ -324,13 +603,93 @@
     <div id="state-loading" class="hidden">
       <div class="rounded-xl border border-surface-border overflow-hidden bg-surface-card">
         <table class="w-full">
-          <thead><tr class="border-b border-surface-border"><th class="px-6 py-4 text-left"><div class="skeleton h-4 w-8"></div></th><th class="px-6 py-4 text-left"><div class="skeleton h-4 w-32"></div></th><th class="px-6 py-4 text-left"><div class="skeleton h-4 w-24"></div></th><th class="px-6 py-4 text-left"><div class="skeleton h-4 w-20"></div></th></tr></thead>
+          <thead>
+            <tr class="border-b border-surface-border">
+              <th class="px-6 py-4 text-left">
+                <div class="skeleton h-4 w-8"></div>
+              </th>
+              <th class="px-6 py-4 text-left">
+                <div class="skeleton h-4 w-32"></div>
+              </th>
+              <th class="px-6 py-4 text-left">
+                <div class="skeleton h-4 w-24"></div>
+              </th>
+              <th class="px-6 py-4 text-left">
+                <div class="skeleton h-4 w-20"></div>
+              </th>
+            </tr>
+          </thead>
           <tbody>
-            <tr class="border-b border-surface-border/50"><td class="px-6 py-4"><div class="skeleton h-4 w-6"></div></td><td class="px-6 py-4"><div class="skeleton h-4 w-64"></div></td><td class="px-6 py-4"><div class="skeleton h-4 w-28"></div></td><td class="px-6 py-4"><div class="skeleton h-6 w-24 rounded-full"></div></td></tr>
-            <tr class="border-b border-surface-border/50"><td class="px-6 py-4"><div class="skeleton h-4 w-6"></div></td><td class="px-6 py-4"><div class="skeleton h-4 w-52"></div></td><td class="px-6 py-4"><div class="skeleton h-4 w-20"></div></td><td class="px-6 py-4"><div class="skeleton h-6 w-36 rounded-full"></div></td></tr>
-            <tr class="border-b border-surface-border/50"><td class="px-6 py-4"><div class="skeleton h-4 w-6"></div></td><td class="px-6 py-4"><div class="skeleton h-4 w-56"></div></td><td class="px-6 py-4"><div class="skeleton h-4 w-32"></div></td><td class="px-6 py-4"><div class="skeleton h-6 w-24 rounded-full"></div></td></tr>
-            <tr class="border-b border-surface-border/50"><td class="px-6 py-4"><div class="skeleton h-4 w-6"></div></td><td class="px-6 py-4"><div class="skeleton h-4 w-48"></div></td><td class="px-6 py-4"><div class="skeleton h-4 w-24"></div></td><td class="px-6 py-4"><div class="skeleton h-6 w-32 rounded-full"></div></td></tr>
-            <tr><td class="px-6 py-4"><div class="skeleton h-4 w-6"></div></td><td class="px-6 py-4"><div class="skeleton h-4 w-60"></div></td><td class="px-6 py-4"><div class="skeleton h-4 w-28"></div></td><td class="px-6 py-4"><div class="skeleton h-6 w-24 rounded-full"></div></td></tr>
+            <tr class="border-b border-surface-border/50">
+              <td class="px-6 py-4">
+                <div class="skeleton h-4 w-6"></div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="skeleton h-4 w-64"></div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="skeleton h-4 w-28"></div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="skeleton h-6 w-24 rounded-full"></div>
+              </td>
+            </tr>
+            <tr class="border-b border-surface-border/50">
+              <td class="px-6 py-4">
+                <div class="skeleton h-4 w-6"></div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="skeleton h-4 w-52"></div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="skeleton h-4 w-20"></div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="skeleton h-6 w-36 rounded-full"></div>
+              </td>
+            </tr>
+            <tr class="border-b border-surface-border/50">
+              <td class="px-6 py-4">
+                <div class="skeleton h-4 w-6"></div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="skeleton h-4 w-56"></div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="skeleton h-4 w-32"></div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="skeleton h-6 w-24 rounded-full"></div>
+              </td>
+            </tr>
+            <tr class="border-b border-surface-border/50">
+              <td class="px-6 py-4">
+                <div class="skeleton h-4 w-6"></div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="skeleton h-4 w-48"></div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="skeleton h-4 w-24"></div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="skeleton h-6 w-32 rounded-full"></div>
+              </td>
+            </tr>
+            <tr>
+              <td class="px-6 py-4">
+                <div class="skeleton h-4 w-6"></div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="skeleton h-4 w-60"></div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="skeleton h-4 w-28"></div>
+              </td>
+              <td class="px-6 py-4">
+                <div class="skeleton h-6 w-24 rounded-full"></div>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -341,38 +700,72 @@
       <!-- Toolbar -->
       <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6 relative z-10">
         <div class="flex items-center gap-3">
-          <h2 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-200 to-slate-400">Microservices</h2>
+          <h2 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-200 to-slate-400">
+            Microservices</h2>
           <!-- Bulk actions toolbar -->
-          <div id="bulk-actions" class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] items-center bg-[#0b0c10]/90 backdrop-blur-2xl border border-white/20 p-2 rounded-2xl animate-fade-in transition-all duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
-            <span id="bulk-count" class="text-[11px] font-bold text-accent px-2 tracking-wider uppercase">0 selected</span>
+          <div id="bulk-actions"
+            class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] items-center bg-[#0b0c10]/90 backdrop-blur-2xl border border-white/20 p-2 rounded-2xl animate-fade-in transition-all duration-300 shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+            <span id="bulk-count" class="text-[11px] font-bold text-accent px-2 tracking-wider uppercase">0
+              selected</span>
             <div class="w-px h-5 bg-white/10 mx-1"></div>
             <div class="flex items-center gap-1">
-              <button onclick="bulkAction('fetch')" class="btn-linear p-2 rounded-lg text-slate-300 hover:text-sky-400 hover:!border-sky-500/40 hover:bg-sky-500/10 transition-colors" title="Fetch Selected">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3 3m0 0l-3-3m3 3V8"/></svg>
+              <button onclick="bulkAction('fetch')"
+                class="btn-linear p-2 rounded-lg text-slate-300 hover:text-sky-400 hover:!border-sky-500/40 hover:bg-sky-500/10 transition-colors"
+                title="Fetch Selected">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3 3m0 0l-3-3m3 3V8" />
+                </svg>
               </button>
-              <button onclick="bulkAction('pull')" class="btn-linear p-2 rounded-lg text-emerald-400 !border-emerald-500/20 hover:!border-emerald-400 hover:bg-emerald-500/10 transition-colors" title="Pull Selected">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              <button onclick="bulkAction('pull')"
+                class="btn-linear p-2 rounded-lg text-emerald-400 !border-emerald-500/20 hover:!border-emerald-400 hover:bg-emerald-500/10 transition-colors"
+                title="Pull Selected">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
               </button>
-              <button onclick="bulkAction('push')" class="btn-linear p-2 rounded-lg text-amber-400 !border-amber-500/20 hover:!border-amber-400 hover:bg-amber-500/10 transition-colors" title="Push Selected">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              <button onclick="bulkAction('push')"
+                class="btn-linear p-2 rounded-lg text-amber-400 !border-amber-500/20 hover:!border-amber-400 hover:bg-amber-500/10 transition-colors"
+                title="Push Selected">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
               </button>
               <div class="w-px h-5 bg-white/10 mx-1"></div>
-              <button onclick="bulkAction('stash')" class="btn-linear p-2 rounded-lg text-slate-400 hover:text-white hover:!border-slate-500/40 hover:bg-white/10 transition-colors" title="Stash Selected">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+              <button onclick="bulkAction('stash')"
+                class="btn-linear p-2 rounded-lg text-slate-400 hover:text-white hover:!border-slate-500/40 hover:bg-white/10 transition-colors"
+                title="Stash Selected">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                </svg>
               </button>
-              <button onclick="bulkAction('pop')" class="btn-linear p-2 rounded-lg text-slate-400 hover:text-white hover:!border-slate-500/40 hover:bg-white/10 transition-colors" title="Pop Stash Selected">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 8H5M19 8a2 2 0 100-4H5a2 2 0 100 4M19 8v10a2 2 0 01-2 2H7a2 2 0 01-2-2V8m9 4H8m4 0v4"/></svg>
+              <button onclick="bulkAction('pop')"
+                class="btn-linear p-2 rounded-lg text-slate-400 hover:text-white hover:!border-slate-500/40 hover:bg-white/10 transition-colors"
+                title="Pop Stash Selected">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 8H5M19 8a2 2 0 100-4H5a2 2 0 100 4M19 8v10a2 2 0 01-2 2H7a2 2 0 01-2-2V8m9 4H8m4 0v4" />
+                </svg>
               </button>
               <div class="w-px h-5 bg-white/10 mx-1"></div>
-              <button onclick="removeSelectedRepos()" class="btn-linear p-2 rounded-lg text-slate-400 hover:text-red-400 hover:!border-red-500/40 hover:bg-red-500/10 transition-colors" title="Remove Workspace">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              <button onclick="removeSelectedRepos()"
+                class="btn-linear p-2 rounded-lg text-slate-400 hover:text-red-400 hover:!border-red-500/40 hover:bg-red-500/10 transition-colors"
+                title="Remove Workspace">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
               </button>
             </div>
           </div>
         </div>
-        
+
         <div class="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
-          <select id="status-filter" onchange="filterReposText()" class="w-full sm:w-auto bg-surface-hover/40 backdrop-blur-xl border border-surface-border rounded-xl pl-4 pr-10 py-2.5 text-sm text-slate-200 font-medium outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/20 appearance-none min-w-[170px] shadow-inner transition-all hover:bg-surface-hover/60">
+          <select id="status-filter" onchange="filterReposText()"
+            class="w-full sm:w-auto bg-surface-hover/40 backdrop-blur-xl border border-surface-border rounded-xl pl-4 pr-10 py-2.5 text-sm text-slate-200 font-medium outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/20 appearance-none min-w-[170px] shadow-inner transition-all hover:bg-surface-hover/60">
             <option value="all" class="bg-surface-card text-slate-200">▤ Tất cả trạng thái</option>
             <option value="clean" class="bg-surface-card text-emerald-400">🟢 Clean / Đồng bộ</option>
             <option value="modified" class="bg-surface-card text-amber-400">🟡 Modified / Chưa lưu</option>
@@ -382,26 +775,49 @@
           </select>
           <div class="relative w-full sm:w-80">
             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <svg class="w-4.5 h-4.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <svg class="w-4.5 h-4.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </div>
-            <input type="text" id="repo-search" oninput="filterReposText()" class="w-full bg-surface-hover/40 backdrop-blur-xl border border-surface-border rounded-xl pl-11 pr-4 py-2.5 text-sm font-medium text-slate-200 placeholder-slate-500/80 focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/20 transition-all hover:bg-surface-hover/60 shadow-inner" placeholder="Tìm repo, branch, môi trường...">
+            <input type="text" id="repo-search" oninput="filterReposText()"
+              class="w-full bg-surface-hover/40 backdrop-blur-xl border border-surface-border rounded-xl pl-11 pr-4 py-2.5 text-sm font-medium text-slate-200 placeholder-slate-500/80 focus:outline-none focus:border-accent/50 focus:ring-2 focus:ring-accent/20 transition-all hover:bg-surface-hover/60 shadow-inner"
+              placeholder="Tìm repo, branch, môi trường...">
           </div>
         </div>
       </div>
 
-      <div class="glass-card rounded-2xl overflow-hidden backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] relative border border-white/5">
+      <div
+        class="glass-card rounded-2xl overflow-hidden backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] relative border border-white/5">
         <div class="overflow-x-auto min-h-[50vh]">
           <table class="w-full border-collapse">
             <thead class="bg-surface-card/50 backdrop-blur-xl border-b border-white/5 sticky top-0 z-20">
               <tr>
                 <th class="px-3 sm:px-6 py-4 sm:py-5 text-center w-10 sm:w-12 border-r border-white/5">
-                  <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)" class="w-4 h-4 rounded appearance-none border-2 border-slate-600 bg-surface/50 text-accent checked:bg-accent checked:border-accent cb-folder cursor-pointer transition-all hover:border-accent/50">
+                  <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"
+                    class="w-4 h-4 rounded appearance-none border-2 border-slate-600 bg-surface/50 text-accent checked:bg-accent checked:border-accent cb-folder cursor-pointer transition-all hover:border-accent/50">
                 </th>
-                <th class="hidden sm:table-cell px-3 sm:px-6 py-4 sm:py-5 text-left text-[11px] font-bold text-slate-400/80 uppercase tracking-[0.15em] w-12 border-r border-white/5">#</th>
-                <th class="px-3 sm:px-6 py-4 sm:py-5 text-left text-[11px] font-bold text-slate-400/80 uppercase tracking-[0.15em] border-r border-white/5">Microservice</th>
-                <th class="px-3 sm:px-6 py-4 sm:py-5 text-left text-[11px] font-bold text-slate-400/80 uppercase tracking-[0.15em] border-r border-white/5">Branch</th>
-                <th class="px-3 sm:px-6 py-4 sm:py-5 text-left text-[11px] font-bold text-slate-400/80 uppercase tracking-[0.15em] border-r border-white/5 w-32 sm:w-40">Status</th>
-                <th class="px-3 sm:px-6 py-4 sm:py-5 text-right text-[11px] font-bold text-slate-400/80 uppercase tracking-[0.15em] w-[140px] sm:w-[180px]">Actions</th>
+                <th
+                  class="hidden sm:table-cell px-3 sm:px-6 py-4 sm:py-5 text-left text-[11px] font-bold text-slate-400/80 uppercase tracking-[0.15em] w-12 border-r border-white/5">
+                  #</th>
+                <th
+                  class="th-sortable px-3 sm:px-6 py-4 sm:py-5 text-left text-[11px] font-bold text-slate-400/80 uppercase tracking-[0.15em] border-r border-white/5"
+                  data-sort="name" onclick="sortRepos('name')">
+                  Microservice <span class="sort-icon">▲▼</span>
+                </th>
+                <th
+                  class="th-sortable px-3 sm:px-6 py-4 sm:py-5 text-left text-[11px] font-bold text-slate-400/80 uppercase tracking-[0.15em] border-r border-white/5"
+                  data-sort="branch" onclick="sortRepos('branch')">
+                  Branch <span class="sort-icon">▲▼</span>
+                </th>
+                <th
+                  class="th-sortable px-3 sm:px-6 py-4 sm:py-5 text-left text-[11px] font-bold text-slate-400/80 uppercase tracking-[0.15em] border-r border-white/5 w-32 sm:w-40"
+                  data-sort="status" onclick="sortRepos('status')">
+                  Status <span class="sort-icon">▲▼</span>
+                </th>
+                <th
+                  class="px-3 sm:px-6 py-4 sm:py-5 text-right text-[11px] font-bold text-slate-400/80 uppercase tracking-[0.15em] w-[140px] sm:w-[180px]">
+                  Actions</th>
               </tr>
             </thead>
             <tbody id="repos-tbody" class="divide-y divide-white/5"></tbody>
@@ -414,7 +830,8 @@
   <footer class="max-w-7xl mx-auto px-6 py-6 mt-4">
     <div class="flex items-center justify-center gap-2 text-xs text-slate-500 font-medium">
       <svg class="w-4 h-4 text-accent/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
       </svg>
       <span>GitManage &mdash; Built for developers managing microservices at scale.</span>
     </div>
@@ -425,15 +842,18 @@
     <div class="absolute inset-0 bg-[#0b0c10]/70 backdrop-blur-md fade-in" onclick="closeBrowser()"></div>
 
     <div class="absolute inset-0 flex items-center justify-center p-4">
-      <div class="slide-up w-full max-w-2xl glass-card rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 flex flex-col max-h-[80vh]">
+      <div
+        class="slide-up w-full max-w-2xl glass-card rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 flex flex-col max-h-[80vh]">
 
         <!-- Modal Header -->
         <div class="flex items-center justify-between px-6 py-5 border-b border-white/5 bg-white/5 rounded-t-2xl">
           <div>
-            <h2 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">Browse Folders</h2>
+            <h2 class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">Browse
+              Folders</h2>
             <p class="text-xs text-slate-400 mt-1">Check folders to add, click arrow to navigate inside</p>
           </div>
-          <button onclick="closeBrowser()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors bg-white/5">
+          <button onclick="closeBrowser()"
+            class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors bg-white/5">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -442,11 +862,17 @@
 
         <!-- Manual Path Input -->
         <div class="px-6 py-4 border-b border-white/5 bg-black/20">
-          <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Hoặc nhập đường dẫn trực tiếp</label>
+          <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Hoặc nhập đường dẫn trực
+            tiếp</label>
           <div class="flex gap-2">
-            <input type="text" id="manual-path-input" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm font-medium text-slate-200 placeholder-slate-500/80 focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 transition-all font-mono" placeholder="D:\Projects\my-microservice">
-            <button onclick="addManualPath()" id="btn-add-manual" class="shrink-0 px-4 py-2 flex items-center gap-2 rounded-xl bg-emerald-500 border border-emerald-500/50 text-white hover:bg-emerald-600 transition-all shadow-[0_4px_14px_rgba(16,185,129,0.3)] text-sm font-bold disabled:opacity-50">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+            <input type="text" id="manual-path-input"
+              class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-sm font-medium text-slate-200 placeholder-slate-500/80 focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 transition-all font-mono"
+              placeholder="D:\Projects\my-microservice">
+            <button onclick="addManualPath()" id="btn-add-manual"
+              class="shrink-0 px-4 py-2 flex items-center gap-2 rounded-xl bg-emerald-500 border border-emerald-500/50 text-white hover:bg-emerald-600 transition-all shadow-[0_4px_14px_rgba(16,185,129,0.3)] text-sm font-bold disabled:opacity-50">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+              </svg>
               Thêm
             </button>
           </div>
@@ -454,13 +880,17 @@
 
         <!-- Current Path Bar + Select All -->
         <div class="px-6 py-3 border-b border-white/5 bg-black/20 flex items-center justify-between">
-          <div class="flex items-center gap-2 min-w-0 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 shadow-inner grow mr-4">
+          <div
+            class="flex items-center gap-2 min-w-0 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5 shadow-inner grow mr-4">
             <svg class="w-4 h-4 text-accent/80 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
             </svg>
-            <span id="browser-current-path" class="text-xs font-mono text-slate-300 truncate font-semibold w-full">Loading...</span>
+            <span id="browser-current-path"
+              class="text-xs font-mono text-slate-300 truncate font-semibold w-full">Loading...</span>
           </div>
-          <button id="btn-select-all" onclick="toggleSelectAll()" class="text-xs font-bold text-accent hover:text-white transition-colors flex-shrink-0 px-3 py-1.5 rounded bg-accent/10 hover:bg-accent/30 border border-accent/20">
+          <button id="btn-select-all" onclick="toggleSelectAll()"
+            class="text-xs font-bold text-accent hover:text-white transition-colors flex-shrink-0 px-3 py-1.5 rounded bg-accent/10 hover:bg-accent/30 border border-accent/20">
             Select All
           </button>
         </div>
@@ -479,7 +909,8 @@
             Back up
           </button>
           <div class="flex items-center gap-3">
-            <button onclick="closeBrowser()" class="px-5 py-2.5 text-sm font-semibold rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-all">
+            <button onclick="closeBrowser()"
+              class="px-5 py-2.5 text-sm font-semibold rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-all">
               Cancel
             </button>
             <button id="btn-add-selected" onclick="addSelectedFolders()" disabled
@@ -495,39 +926,55 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
-  
   <!-- Branch Switcher Modal -->
-  <div id="branch-modal" class="hidden fixed inset-0 bg-[#0b0c10]/70 backdrop-blur-md z-50 flex items-center justify-center opacity-0 transition-opacity duration-200">
-    <div class="glass-card w-full max-w-sm rounded-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden scale-95 transition-transform duration-200">
+  <div id="branch-modal"
+    class="hidden fixed inset-0 bg-[#0b0c10]/70 backdrop-blur-md z-50 flex items-center justify-center opacity-0 transition-opacity duration-200">
+    <div
+      class="glass-card w-full max-w-sm rounded-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden scale-95 transition-transform duration-200">
       <div class="px-5 py-4 border-b border-white/5 flex justify-between items-center bg-white/5">
-        <h3 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">Change Branch</h3>
-        <button onclick="closeBranchModal()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors bg-white/5">
-          <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        <h3 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">Change
+          Branch</h3>
+        <button onclick="closeBranchModal()"
+          class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors bg-white/5">
+          <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
       </div>
       <div class="p-5 bg-black/20">
         <div id="branch-modal-loading" class="text-center text-slate-400 py-6">
-          <svg class="w-6 h-6 spin mx-auto text-accent mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <svg class="w-6 h-6 spin mx-auto text-accent mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
           <span class="text-sm font-medium">Loading branches...</span>
         </div>
         <div id="branch-modal-error" class="text-center text-red-400 py-6 hidden">
           <p class="text-sm font-medium" id="branch-error-msg">Error loading branches</p>
         </div>
-        
+
         <div id="branch-modal-content" class="hidden">
-          <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Select Local Branch</label>
+          <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Select Local
+            Branch</label>
           <div class="relative mb-3">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </div>
-            <input type="text" id="branch-filter" oninput="filterBranchList(this.value)" class="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm font-medium text-slate-200 placeholder-slate-500/80 focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 shadow-inner backdrop-blur-md transition-all" placeholder="Tìm tên nhánh...">
+            <input type="text" id="branch-filter" oninput="filterBranchList(this.value)"
+              class="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm font-medium text-slate-200 placeholder-slate-500/80 focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 shadow-inner backdrop-blur-md transition-all"
+              placeholder="Tìm tên nhánh...">
           </div>
-          <div id="branch-list" class="max-h-56 overflow-y-auto border border-white/5 rounded-xl bg-black/40 shadow-inner flex flex-col p-1.5 space-y-0.5 custom-scrollbar">
+          <div id="branch-list"
+            class="max-h-56 overflow-y-auto border border-white/5 rounded-xl bg-black/40 shadow-inner flex flex-col p-1.5 space-y-0.5 custom-scrollbar">
           </div>
           <div class="flex items-center gap-3 mt-5 border-t border-white/5 pt-4">
-            <button onclick="closeBranchModal()" class="flex-1 px-4 py-2.5 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-all text-sm font-bold">Cancel</button>
-            <button id="btn-checkout" onclick="executeCheckout()" class="flex-1 px-4 py-2.5 flex items-center justify-center rounded-xl bg-accent text-white hover:bg-accent-hover transition-all shadow-[0_4px_14px_rgba(99,102,241,0.4)] text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">Checkout</button>
+            <button onclick="closeBranchModal()"
+              class="flex-1 px-4 py-2.5 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-all text-sm font-bold">Cancel</button>
+            <button id="btn-checkout" onclick="executeCheckout()"
+              class="flex-1 px-4 py-2.5 flex items-center justify-center rounded-xl bg-accent text-white hover:bg-accent-hover transition-all shadow-[0_4px_14px_rgba(99,102,241,0.4)] text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">Checkout</button>
           </div>
         </div>
       </div>
@@ -535,30 +982,57 @@
   </div>
 
   <!-- Commit Modal -->
-  <div id="commit-modal" class="hidden fixed inset-0 bg-[#0b0c10]/70 backdrop-blur-md z-50 flex items-center justify-center opacity-0 transition-opacity duration-200">
-    <div class="glass-card w-full max-w-lg rounded-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden scale-95 transition-transform duration-200">
+  <div id="commit-modal"
+    class="hidden fixed inset-0 bg-[#0b0c10]/70 backdrop-blur-md z-50 flex items-center justify-center opacity-0 transition-opacity duration-200">
+    <div
+      class="glass-card w-full max-w-lg rounded-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden scale-95 transition-transform duration-200">
       <div class="px-5 py-4 border-b border-white/5 flex justify-between items-center bg-white/5">
-        <h3 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Commit Changes</h3>
-        <button onclick="closeCommitModal()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors bg-white/5">
-          <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        <h3 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Commit
+          Changes</h3>
+        <button onclick="closeCommitModal()"
+          class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors bg-white/5">
+          <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
       </div>
       <div class="p-5 bg-black/20">
         <div id="commit-modal-loading" class="text-center text-slate-400 py-6 hidden">
-          <svg class="w-6 h-6 spin mx-auto text-amber-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          <svg class="w-6 h-6 spin mx-auto text-amber-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
           <span class="text-sm font-medium">Đang xử lý...</span>
         </div>
         <div id="commit-modal-content">
           <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Modified Files</label>
-          <div id="commit-file-list" class="max-h-40 overflow-y-auto mb-4 border border-white/5 rounded-xl bg-black/40 shadow-inner flex flex-col p-2 space-y-1 custom-scrollbar text-[13px] font-mono text-slate-300">
+          <div id="commit-file-list"
+            class="max-h-40 overflow-y-auto mb-4 border border-white/5 rounded-xl bg-black/40 shadow-inner flex flex-col p-2 space-y-1 custom-scrollbar text-[13px] font-mono text-slate-300">
           </div>
-          
-          <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Commit Message</label>
-          <textarea id="commit-message" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium text-slate-200 placeholder-slate-500/80 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 shadow-inner backdrop-blur-md transition-all resize-none h-24" placeholder="Ví dụ: fix: update payment logic... (Ctrl+Enter để Commit)"></textarea>
 
-          <div class="flex items-center gap-3 mt-5 border-t border-white/5 pt-4">
-            <button onclick="closeCommitModal()" class="flex-1 px-4 py-2.5 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-all text-sm font-bold">Cancel</button>
-            <button id="btn-commit-action" onclick="executeCommit()" class="flex-[2] px-4 py-2.5 flex items-center justify-center rounded-xl bg-amber-500 text-white hover:bg-amber-600 transition-all shadow-[0_4px_14px_rgba(245,158,11,0.4)] text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">Commit Now</button>
+          <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Commit Message</label>
+          <textarea id="commit-message"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm font-medium text-slate-200 placeholder-slate-500/80 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 shadow-inner backdrop-blur-md transition-all resize-none h-24"
+            placeholder="Ví dụ: fix: update payment logic... (Ctrl+Enter để Commit)"></textarea>
+
+          <div class="flex items-center gap-2 mt-5 border-t border-white/5 pt-4">
+            <button onclick="closeCommitModal()"
+              class="px-4 py-2.5 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-all text-sm font-bold">Cancel</button>
+            <button id="btn-commit-action" onclick="executeCommit(false)"
+              class="flex-1 px-4 py-2.5 flex items-center justify-center gap-1.5 rounded-xl bg-amber-500 text-white hover:bg-amber-600 transition-all shadow-[0_4px_14px_rgba(245,158,11,0.4)] text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              Commit
+            </button>
+            <button id="btn-commit-push-action" onclick="executeCommit(true)"
+              class="flex-1 px-4 py-2.5 flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 transition-all shadow-[0_4px_14px_rgba(16,185,129,0.4)] text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+              </svg>
+              Commit &amp; Push
+            </button>
           </div>
         </div>
       </div>
@@ -566,27 +1040,38 @@
   </div>
 
   <!-- Conflict Modal -->
-  <div id="conflict-modal" class="hidden fixed inset-0 bg-[#0b0c10]/70 backdrop-blur-md z-50 flex flex-col items-center justify-center opacity-0 transition-opacity duration-200">
-    <div class="glass-card w-full max-w-lg rounded-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden scale-95 transition-transform duration-200">
+  <div id="conflict-modal"
+    class="hidden fixed inset-0 bg-[#0b0c10]/70 backdrop-blur-md z-50 flex flex-col items-center justify-center opacity-0 transition-opacity duration-200">
+    <div
+      class="glass-card w-full max-w-lg rounded-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden scale-95 transition-transform duration-200">
       <div class="px-5 py-4 border-b border-white/5 flex justify-between items-center bg-white/5">
         <div class="flex items-center gap-2">
           <span class="text-xl">⚔️</span>
-          <h3 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-rose-400 to-rose-200">Merge Conflicts</h3>
+          <h3 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-rose-400 to-rose-200">Merge
+            Conflicts</h3>
         </div>
-        <button onclick="closeConflictModal()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors bg-white/5">
-          <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        <button onclick="closeConflictModal()"
+          class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors bg-white/5">
+          <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
       </div>
       <div class="p-5 bg-black/20">
         <div id="conflict-modal-content">
-          <p class="text-sm text-slate-400 mb-4">Các file sau đang bị xung đột (conflict). Hãy xử lý thủ công bằng editor của bạn, lưu lại, sau đó Commit để hoàn tất.</p>
+          <p class="text-sm text-slate-400 mb-4">Các file sau đang bị xung đột (conflict). Hãy xử lý thủ công bằng
+            editor của bạn, lưu lại, sau đó Commit để hoàn tất.</p>
           <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Conflicted Files</label>
-          <div id="conflict-file-list" class="max-h-60 overflow-y-auto mb-4 border border-white/5 rounded-xl bg-black/40 shadow-inner flex flex-col p-2 space-y-2 custom-scrollbar text-[13px] font-mono text-slate-300">
+          <div id="conflict-file-list"
+            class="max-h-60 overflow-y-auto mb-4 border border-white/5 rounded-xl bg-black/40 shadow-inner flex flex-col p-2 space-y-2 custom-scrollbar text-[13px] font-mono text-slate-300">
           </div>
-          
+
           <div class="flex items-center gap-3 mt-5 border-t border-white/5 pt-4">
-            <button onclick="closeConflictModal()" class="px-4 py-2.5 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-all text-sm font-bold flex-1">Đóng</button>
-            <button id="btn-open-conflict-folder" class="px-4 py-2.5 flex items-center justify-center rounded-xl bg-rose-500 text-white hover:bg-rose-600 transition-all shadow-[0_4px_14px_rgba(244,63,94,0.4)] text-sm font-bold flex-[2]">Mở thư mục Repo</button>
+            <button onclick="closeConflictModal()"
+              class="px-4 py-2.5 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-all text-sm font-bold flex-1">Đóng</button>
+            <button id="btn-open-conflict-folder"
+              class="px-4 py-2.5 flex items-center justify-center rounded-xl bg-rose-500 text-white hover:bg-rose-600 transition-all shadow-[0_4px_14px_rgba(244,63,94,0.4)] text-sm font-bold flex-[2]">Mở
+              thư mục Repo</button>
           </div>
         </div>
       </div>
@@ -594,116 +1079,167 @@
   </div>
 
   <!-- Global Timeline Drawer -->
-  <div id="timeline-backdrop" class="fixed inset-0 bg-[#0b0c10]/40 backdrop-blur-sm z-[50] opacity-0 pointer-events-none transition-opacity duration-300" onclick="toggleTimeline()"></div>
-  <div id="timeline-sidebar" class="fixed top-0 right-0 h-full w-[400px] max-w-[90vw] bg-surface/90 backdrop-blur-2xl border-l border-surface-border z-[60] transform translate-x-full transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-2xl flex flex-col">
+  <div id="timeline-backdrop"
+    class="fixed inset-0 bg-[#0b0c10]/40 backdrop-blur-sm z-[50] opacity-0 pointer-events-none transition-opacity duration-300"
+    onclick="toggleTimeline()"></div>
+  <div id="timeline-sidebar"
+    class="fixed top-0 right-0 h-full w-[400px] max-w-[90vw] bg-surface/90 backdrop-blur-2xl border-l border-surface-border z-[60] transform translate-x-full transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-2xl flex flex-col">
     <div class="px-5 py-4 border-b border-surface-border flex justify-between items-center bg-black/20">
       <div class="flex items-center gap-2">
         <div class="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center">
-          <svg class="w-4.5 h-4.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <svg class="w-4.5 h-4.5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
         </div>
         <div>
           <h3 class="font-bold text-white text-[15px]">Global Timeline</h3>
           <p class="text-[11px] text-slate-400 font-mono">Top 50 Recent Commits</p>
         </div>
       </div>
-      <button onclick="toggleTimeline()" class="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      <button onclick="toggleTimeline()"
+        class="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
       </button>
     </div>
     <div id="timeline-content" class="flex-1 overflow-y-auto p-4 custom-scrollbar"></div>
   </div>
 
   <!-- Global Search Drawer -->
-  <div id="search-backdrop" class="fixed inset-0 bg-[#0b0c10]/40 backdrop-blur-sm z-[50] opacity-0 pointer-events-none transition-opacity duration-300" onclick="toggleSearch()"></div>
-  <div id="search-sidebar" class="fixed top-0 right-0 h-full w-[550px] max-w-[90vw] bg-surface/95 backdrop-blur-2xl border-l border-surface-border z-[60] transform translate-x-full transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-2xl flex flex-col">
+  <div id="search-backdrop"
+    class="fixed inset-0 bg-[#0b0c10]/40 backdrop-blur-sm z-[50] opacity-0 pointer-events-none transition-opacity duration-300"
+    onclick="toggleSearch()"></div>
+  <div id="search-sidebar"
+    class="fixed top-0 right-0 h-full w-[550px] max-w-[90vw] bg-surface/95 backdrop-blur-2xl border-l border-surface-border z-[60] transform translate-x-full transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-2xl flex flex-col">
     <div class="px-5 py-4 border-b border-surface-border bg-black/20">
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-2">
           <div class="w-8 h-8 rounded-lg bg-sky-500/20 border border-sky-500/30 flex items-center justify-center">
-            <svg class="w-4.5 h-4.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <svg class="w-4.5 h-4.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
           </div>
           <div>
             <h3 class="font-bold text-white text-[15px]">Global Search</h3>
             <p class="text-[11px] text-slate-400 font-mono">Search code across all repositories</p>
           </div>
         </div>
-        <button onclick="toggleSearch()" class="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        <button onclick="toggleSearch()"
+          class="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
       </div>
 
       <div class="relative">
         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
         </div>
-        <input type="text" id="global-search-input" onkeydown="handleSearchInput(event)" class="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm font-medium text-slate-200 placeholder-slate-500/80 focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/50 transition-all font-mono" placeholder="Tìm text hoặc mã nguồn... (Enter để tìm kiếm)">
+        <input type="text" id="global-search-input" onkeydown="handleSearchInput(event)"
+          class="w-full bg-black/40 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm font-medium text-slate-200 placeholder-slate-500/80 focus:outline-none focus:border-sky-500/50 focus:ring-1 focus:ring-sky-500/50 transition-all font-mono"
+          placeholder="Tìm text hoặc mã nguồn... (Enter để tìm kiếm)">
       </div>
 
       <div class="flex items-center gap-4 mt-3 px-1">
-        <label class="flex items-center gap-1.5 cursor-pointer text-xs text-slate-300 hover:text-white transition-colors">
-          <input type="checkbox" id="search-opt-case" class="rounded bg-black/40 border-white/20 text-sky-500 focus:ring-sky-500/50">
+        <label
+          class="flex items-center gap-1.5 cursor-pointer text-xs text-slate-300 hover:text-white transition-colors">
+          <input type="checkbox" id="search-opt-case"
+            class="rounded bg-black/40 border-white/20 text-sky-500 focus:ring-sky-500/50">
           Match Case
         </label>
-        <label class="flex items-center gap-1.5 cursor-pointer text-xs text-slate-300 hover:text-white transition-colors">
-          <input type="checkbox" id="search-opt-word" class="rounded bg-black/40 border-white/20 text-sky-500 focus:ring-sky-500/50">
+        <label
+          class="flex items-center gap-1.5 cursor-pointer text-xs text-slate-300 hover:text-white transition-colors">
+          <input type="checkbox" id="search-opt-word"
+            class="rounded bg-black/40 border-white/20 text-sky-500 focus:ring-sky-500/50">
           Whole Word
         </label>
-        <label class="flex items-center gap-1.5 cursor-pointer text-xs text-slate-300 hover:text-white transition-colors">
-          <input type="checkbox" id="search-opt-regex" class="rounded bg-black/40 border-white/20 text-sky-500 focus:ring-sky-500/50">
+        <label
+          class="flex items-center gap-1.5 cursor-pointer text-xs text-slate-300 hover:text-white transition-colors">
+          <input type="checkbox" id="search-opt-regex"
+            class="rounded bg-black/40 border-white/20 text-sky-500 focus:ring-sky-500/50">
           Regex
         </label>
       </div>
     </div>
-    
+
     <div id="search-loading" class="hidden text-center text-slate-400 py-10">
-      <svg class="w-6 h-6 spin mx-auto text-sky-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      <svg class="w-6 h-6 spin mx-auto text-sky-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+      </svg>
       <span class="text-xs font-mono">Đang tìm kiếm...</span>
     </div>
     <div id="search-results-content" class="flex-1 overflow-y-auto p-0 custom-scrollbar bg-surface text-sm">
-      <div class="flex items-center justify-center h-full text-slate-500 italic text-xs">Vui lòng nhập từ khóa để tìm kiếm.</div>
+      <div class="flex items-center justify-center h-full text-slate-500 italic text-xs">Vui lòng nhập từ khóa để tìm
+        kiếm.</div>
     </div>
   </div>
 
   <!-- Git Graph Modal -->
-  <div id="graph-modal" class="hidden fixed inset-0 bg-[#0b0c10]/80 backdrop-blur-xl z-50 flex items-center justify-center opacity-0 transition-opacity duration-300">
-    <div class="glass-card w-[95vw] h-[90vh] max-w-6xl rounded-3xl border border-white/10 shadow-[0_30px_100px_rgba(0,0,0,0.7)] flex flex-col overflow-hidden scale-95 transition-transform duration-300 ease-out">
+  <div id="graph-modal"
+    class="hidden fixed inset-0 bg-[#0b0c10]/80 backdrop-blur-xl z-50 flex items-center justify-center opacity-0 transition-opacity duration-300">
+    <div
+      class="glass-card w-[95vw] h-[90vh] max-w-6xl rounded-3xl border border-white/10 shadow-[0_30px_100px_rgba(0,0,0,0.7)] flex flex-col overflow-hidden scale-95 transition-transform duration-300 ease-out">
       <div class="px-6 py-4 border-b border-white/10 flex justify-between items-center bg-white/5 backdrop-blur-md">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-accent/20 border border-accent/30 flex items-center justify-center shadow-lg shadow-accent/20">
-            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+          <div
+            class="w-10 h-10 rounded-2xl bg-accent/20 border border-accent/30 flex items-center justify-center shadow-lg shadow-accent/20">
+            <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M7 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
           </div>
           <div>
             <h3 id="graph-repo-name" class="text-lg font-bold text-white tracking-tight leading-tight">Repo Name</h3>
             <p class="text-[11px] text-slate-500 font-mono uppercase tracking-widest">Git Graph Visualizer</p>
           </div>
         </div>
-        <button onclick="closeGraphModal()" class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-all border border-white/5 hover:border-red-500/30">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        <button onclick="closeGraphModal()"
+          class="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-all border border-white/5 hover:border-red-500/30">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
       </div>
-      
+
       <div class="flex-1 flex overflow-hidden bg-black/40 relative">
-        <div id="graph-loading" class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm hidden">
-          <svg class="w-8 h-8 spin text-accent mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-          <span class="text-xs font-mono text-slate-400 uppercase tracking-widest animate-pulse">Building SVG Graph...</span>
+        <div id="graph-loading"
+          class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/60 backdrop-blur-sm hidden">
+          <svg class="w-8 h-8 spin text-accent mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span class="text-xs font-mono text-slate-400 uppercase tracking-widest animate-pulse">Building SVG
+            Graph...</span>
         </div>
-        
+
         <!-- Graph visualization side -->
-        <div id="graph-svg-container" class="sticky left-0 top-0 h-full overflow-hidden pointer-events-none bg-black/20" style="width: 80px;">
+        <div id="graph-svg-container" class="sticky left-0 top-0 h-full overflow-hidden pointer-events-none bg-black/20"
+          style="width: 80px;">
           <!-- SVG will be injected here -->
         </div>
-        
+
         <!-- Commit details side -->
         <div id="graph-commits-container" class="flex-1 overflow-y-auto custom-scrollbar relative z-0 pb-10">
           <!-- Commit list will be injected here -->
         </div>
       </div>
-      
+
       <div class="px-6 py-3 border-t border-white/5 bg-black/40 flex items-center justify-between">
         <div class="flex items-center gap-4">
-           <div class="flex items-center gap-1.5 text-[11px] text-slate-500"><span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span> Local</div>
-           <div class="flex items-center gap-1.5 text-[11px] text-slate-500"><span class="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></span> Tags</div>
-           <div class="flex items-center gap-1.5 text-[11px] text-slate-500"><span class="w-2 h-2 rounded-full bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.5)]"></span> Remote/HEAD</div>
+          <div class="flex items-center gap-1.5 text-[11px] text-slate-500"><span
+              class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span> Local</div>
+          <div class="flex items-center gap-1.5 text-[11px] text-slate-500"><span
+              class="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></span> Tags</div>
+          <div class="flex items-center gap-1.5 text-[11px] text-slate-500"><span
+              class="w-2 h-2 rounded-full bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.5)]"></span> Remote/HEAD</div>
         </div>
         <p class="text-[10px] font-mono text-slate-600 italic">Rendered via SVG - Powered by GitManage</p>
       </div>
@@ -711,19 +1247,28 @@
   </div>
 
   <!-- Confirm Modal -->
-  <div id="confirm-modal" class="hidden fixed inset-0 bg-[#0b0c10]/70 backdrop-blur-md z-[110] flex items-center justify-center opacity-0 transition-opacity duration-200">
-    <div class="glass-card w-full max-w-sm rounded-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden scale-95 transition-transform duration-200">
+  <div id="confirm-modal"
+    class="hidden fixed inset-0 bg-[#0b0c10]/70 backdrop-blur-md z-[110] flex items-center justify-center opacity-0 transition-opacity duration-200">
+    <div
+      class="glass-card w-full max-w-sm rounded-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden scale-95 transition-transform duration-200">
       <div class="px-5 py-4 border-b border-white/5 flex justify-between items-center bg-white/5">
-        <h3 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-400 to-red-200">Xác nhận</h3>
-        <button id="btn-close-confirm" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors bg-white/5">
-          <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        <h3 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-400 to-red-200">Xác nhận
+        </h3>
+        <button id="btn-close-confirm"
+          class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors bg-white/5">
+          <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
       </div>
       <div class="p-5 bg-black/20">
         <p id="confirm-message" class="text-sm font-medium text-slate-300 whitespace-pre-line text-center mb-6"></p>
         <div class="flex items-center gap-3 border-t border-white/5 pt-4">
-          <button id="btn-cancel-confirm" class="flex-1 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-all text-sm font-bold">Hủy</button>
-          <button id="btn-ok-confirm" class="flex-1 px-4 py-2.5 rounded-xl bg-red-500 text-white hover:bg-red-600 transition-all shadow-[0_4px_14px_rgba(239,68,68,0.4)] text-sm font-bold">Đồng ý</button>
+          <button id="btn-cancel-confirm"
+            class="flex-1 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-all text-sm font-bold">Hủy</button>
+          <button id="btn-ok-confirm"
+            class="flex-1 px-4 py-2.5 rounded-xl bg-red-500 text-white hover:bg-red-600 transition-all shadow-[0_4px_14px_rgba(239,68,68,0.4)] text-sm font-bold">Đồng
+            ý</button>
         </div>
       </div>
     </div>
@@ -735,4 +1280,5 @@
   <!-- Load script -->
   <script src="/app.js"></script>
 </body>
+
 </html>

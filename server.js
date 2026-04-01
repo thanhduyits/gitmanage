@@ -289,16 +289,21 @@ async function getRepoInfo(dirPath, workspacePath, { skipCache = false } = {}) {
   return gitLimit(async () => {
     try {
       const git = simpleGit(dirPath);
-      const [branchSummary, statusSummary] = await Promise.all([
+      const [branchSummary, statusSummary, remotes] = await Promise.all([
         git.branch(),
         git.status(),
+        git.getRemotes(true),
       ]);
+
+      const originRemote = remotes.find(r => r.name === 'origin');
+      const remoteUrl = originRemote?.refs?.fetch || originRemote?.refs?.push || null;
 
       const result = {
         name: path.basename(dirPath),
         path: dirPath,
         workspace: workspacePath,
         branch: branchSummary.current,
+        remoteUrl,
         status: {
           modified: statusSummary.modified,
           deleted: statusSummary.deleted,
@@ -319,6 +324,7 @@ async function getRepoInfo(dirPath, workspacePath, { skipCache = false } = {}) {
         path: dirPath,
         workspace: workspacePath,
         branch: null,
+        remoteUrl: null,
         status: null,
         error: err.message,
       };
@@ -538,18 +544,31 @@ app.get('/api/repo/diff', async (req, res) => {
   }
 });
 
-// POST /api/repo/commit - Commit changes (with repo lock)
+// POST /api/repo/commit - Commit changes with selective staging and optional push (with repo lock)
 app.post('/api/repo/commit', async (req, res) => {
-  const { path: repoPath, message, workspace } = req.body;
+  const { path: repoPath, message, workspace, files, push: shouldPush } = req.body;
   if (!repoPath || !message) return res.status(400).json({ error: 'Missing path or message' });
   try {
     const result = await withRepoLock(repoPath, () => gitLimit(async () => {
       const git = simpleGit(repoPath);
-      await git.add('.');
+      
+      // Selective staging: add only specified files, or all if no files specified
+      if (Array.isArray(files) && files.length > 0) {
+        await git.add(files);
+      } else {
+        await git.add('.');
+      }
+      
       await git.commit(message);
+      
+      // Optional push after commit
+      if (shouldPush) {
+        await git.push();
+      }
+      
       invalidateCache(repoPath);
       const info = await getRepoInfo(repoPath, workspace, { skipCache: true });
-      return { message: 'Committed successfully', repo: info };
+      return { message: shouldPush ? 'Committed and pushed successfully' : 'Committed successfully', repo: info };
     }));
     res.json(result);
   } catch (err) {

@@ -1,8 +1,8 @@
-# 🌌 GitManage — Workspace Orchestrator (v1.1.0)
+# 🌌 GitManage — Workspace Orchestrator (v1.2.0)
 
 > **GitManage Dashboard** là một công cụ quản lý hàng loạt repository Git trực quan, hiện đại, được thiết kế chuyên biệt để giải quyết các thách thức trong môi trường **Microservices** hoặc các dự án có cấu trúc monorepo phân tán phức tạp.
 
-![Giao diện Glassmorphism Cực Đỉnh](https://img.shields.io/badge/UI-Glassmorphism-purple?style=flat-square) ![Phiên bản](https://img.shields.io/badge/Version-v1.1.0-emerald?style=flat-square) ![Node.js](https://img.shields.io/badge/Node.js-Backend-blue?style=flat-square) ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v3.0+-06B6D4?style=flat-square)
+![Giao diện Glassmorphism Cực Đỉnh](https://img.shields.io/badge/UI-Glassmorphism-purple?style=flat-square) ![Phiên bản](https://img.shields.io/badge/Version-v1.2.0-emerald?style=flat-square) ![Node.js](https://img.shields.io/badge/Node.js-Backend-blue?style=flat-square) ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v3.0+-06B6D4?style=flat-square)
 
 ---
 
@@ -14,18 +14,22 @@
 
 ### ⚡ Hành động Hàng loạt (Bulk Actions)
 Thay vì dùng terminal vào từng repo, thực hiện thao tác cho hàng tá services với 1 thao tác duy nhất:
-- **`Pull` / `Push`**: Đồng bộ code lên/từ remote server.
+- **`Pull` / `Push`**: Đồng bộ code lên/từ remote server. (Hỗ trợ **Commit & Push** liên hoàn trong một lần click).
 - **`Stash` / `Pop`**: Cất giữ hoặc khôi phục thay đổi tạm thời.
-- **`Commit` Modal Thông minh**: Tự động liệt kê các file Modified/Deleted trước khi commit để tránh nhầm lẫn.
+- **Commit Modal Thông minh (Selective Staging)**: Tự động liệt kê các file Modified/Deleted/New. Cung cấp checkbox để bạn chọn *chính xác* những file cần commit thay vì `git add .` toàn bộ. Hỗ trợ phím tắt `Ctrl+Enter` để xác nhận nhanh.
 
 ### 🔍 Global Code Search & Status Filtering
+- **Sắp xếp Động (Interactive Sorting)**: Click vào tiêu đề cột (Microservice, Branch, Status) để sắp xếp danh sách tăng dần/giảm dần.
 - **Bộ lọc Trạng thái Tức thời**: Xem ngay những repo nào đang `🟢 Clean`, `🟡 Modified`, `⬇️ Behind`, `⬆️ Ahead` hoặc `🔴 Error`.
-- **Thanh tìm kiếm (Search)**: Lọc nhanh các microservice theo tên, branch, hoặc môi trường (dev, staging, prod).
+- **Thanh tìm kiếm (Search)**: Lọc nhanh các microservice theo tên, branch, hoặc môi trường. Hỗ trợ phím tắt `Ctrl+K` hoặc `/` để focus ngay lập tức.
+- **Remote URL Linking**: Giao diện tự động phân tích và tạo link Clickable trỏ trực tiếp đến GitHub/Bitbucket của Repo đó.
 
 ### 🎨 Giao diện "Premium" (Modern UI/UX)
 - Thiết kế **Glassmorphism**, làm mờ nền (backdrop-blur) với các thẻ (cards) nổi.
-- **Dark Mode** mặc định bảo vệ mắt, kết hợp ánh sáng Ambient Glow tinh tế.
-- Các hiệu ứng chuyển động (*Micro-animations*) mượt mà, phản hồi tức thì qua hệ thống Toast notifications không gây gián đoạn công việc.
+- **Dark / Light Mode Toggle**: Chuyển đổi linh hoạt giữa giao diện tối bảo vệ mắt và giao diện sáng thanh lịch (Lưu cấu hình qua LocalStorage).
+- **Auto-Refresh**: Tính năng tự động làm mới trạng thái Git ngầm mỗi 30 giây (có thể Bật/Tắt).
+- Các hiệu ứng chuyển động (*Micro-animations*) mượt mà, phản hồi tức thì qua hệ thống Toast notifications (Success, Error, Info).
+- Phím tắt toàn cầu (Global Hotkeys): Dùng phím `R` để làm mới, `T` để mở Timeline, `ESC` để đóng các thanh công cụ an toàn.
 
 ---
 
