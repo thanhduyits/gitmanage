@@ -691,6 +691,25 @@
     </div>
   </div>
 
+  <!-- Confirm Modal -->
+  <div id="confirm-modal" class="hidden fixed inset-0 bg-[#0b0c10]/70 backdrop-blur-md z-[110] flex items-center justify-center opacity-0 transition-opacity duration-200">
+    <div class="glass-card w-full max-w-sm rounded-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden scale-95 transition-transform duration-200">
+      <div class="px-5 py-4 border-b border-white/5 flex justify-between items-center bg-white/5">
+        <h3 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-red-400 to-red-200">Xác nhận</h3>
+        <button id="btn-close-confirm" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors bg-white/5">
+          <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="p-5 bg-black/20">
+        <p id="confirm-message" class="text-sm font-medium text-slate-300 whitespace-pre-line text-center mb-6"></p>
+        <div class="flex items-center gap-3 border-t border-white/5 pt-4">
+          <button id="btn-cancel-confirm" class="flex-1 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-all text-sm font-bold">Hủy</button>
+          <button id="btn-ok-confirm" class="flex-1 px-4 py-2.5 rounded-xl bg-red-500 text-white hover:bg-red-600 transition-all shadow-[0_4px_14px_rgba(239,68,68,0.4)] text-sm font-bold">Đồng ý</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Container -->
   <div id="toast-container" class="fixed bottom-6 right-6 z-[60] flex flex-col gap-3 pointer-events-none"></div>
 

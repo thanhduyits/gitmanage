@@ -62,7 +62,7 @@ async function withRepoLock(repoPath, fn) {
 
 // 3. In-Memory Cache - Avoid re-scanning repos that haven't changed
 const repoCache = new Map();
-const CACHE_TTL_MS = 30_000; // Cache valid for 30 seconds
+const CACHE_TTL_MS = 60_000; // Cache valid for 30 seconds
 
 function getCachedRepo(repoPath) {
   const entry = repoCache.get(repoPath);
@@ -154,10 +154,10 @@ app.post('/api/repos/scan', async (req, res) => {
 
     // Perform the heavy scan once
     const foundRepos = await scanWorkspace(normalizedPath, normalizedPath);
-    
+
     const config = loadConfig();
     let addedCount = 0;
-    
+
     // Save to static list
     foundRepos.forEach(repoInfo => {
       const exists = config.repos.some(r => r.path === repoInfo.path);
@@ -385,7 +385,7 @@ app.get('/api/repo', async (req, res) => {
 app.post('/api/repo/open_folder', (req, res) => {
   const repoPath = req.body.path;
   if (!repoPath) return res.status(400).json({ error: 'Missing path' });
-  
+
   exec(`explorer "${repoPath}"`, (err) => {
     if (err) {
       // explorer.exe thường trả về exit code 1 ở một số thiết lập Windows dù vẫn mở được folder
@@ -422,15 +422,15 @@ app.post('/api/repo/action', async (req, res) => {
       } else {
         throw new Error('Invalid action');
       }
-      
+
       // Invalidate cache after write operation
       invalidateCache(repoPath);
-      
+
       // After action, grab fresh info (skip cache)
       const info = await getRepoInfo(repoPath, workspace, { skipCache: true });
       return { message: `Successfully executed ${action}`, repo: info };
     }));
-    
+
     res.json(result);
   } catch (err) {
     console.error(`[${action}] failed on ${repoPath}:`, err.message);
@@ -455,7 +455,7 @@ app.post('/api/search', async (req, res) => {
         if (options?.isRegex) args.push('-E');
         if (options?.wholeWord) args.push('-w');
         args.push('--', query);
-        
+
         // Use raw execution
         const out = await git.raw(args).catch(err => {
           // If exit code is 1, git grep found nothing
@@ -467,13 +467,13 @@ app.post('/api/search', async (req, res) => {
 
         const lines = out.trim().split('\n');
         const matches = [];
-        
+
         for (const line of lines) {
           const firstColon = line.indexOf(':');
           if (firstColon === -1) continue;
           const secondColon = line.indexOf(':', firstColon + 1);
           if (secondColon === -1) continue;
-          
+
           matches.push({
             file: line.substring(0, firstColon),
             line: parseInt(line.substring(firstColon + 1, secondColon), 10),
@@ -502,7 +502,7 @@ app.get('/api/repo/graph', async (req, res) => {
   const repoPath = req.query.path;
   const count = parseInt(req.query.count) || 100;
   if (!repoPath) return res.status(400).json({ error: 'Missing path' });
-  
+
   try {
     const git = simpleGit(repoPath);
     const log = await git.log({
@@ -519,7 +519,7 @@ app.get('/api/repo/graph', async (req, res) => {
       n: count,
     });
     res.json(log.all);
-  } catch(err) {
+  } catch (err) {
     res.status(500).json({ error: 'Failed to get graph data', detail: err.message });
   }
 });
@@ -593,7 +593,7 @@ app.post('/api/repo/checkout', async (req, res) => {
 app.post('/api/commits/timeline', async (req, res) => {
   const { paths } = req.body;
   if (!Array.isArray(paths)) return res.status(400).json({ error: 'Missing paths array' });
-  
+
   try {
     const promises = paths.map((repoPath) => gitLimit(async () => {
       try {
@@ -611,10 +611,10 @@ app.post('/api/commits/timeline', async (req, res) => {
 
     const results = await Promise.all(promises);
     const flattened = results.flat();
-    
+
     // Sort descending by date
     flattened.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
+
     // Return top 50
     res.json(flattened.slice(0, 50));
   } catch (err) {
@@ -628,7 +628,7 @@ app.get('/api/repos', async (req, res) => {
     const config = loadConfig();
     const targetWs = req.query.workspace;
 
-    const reposToProcess = targetWs 
+    const reposToProcess = targetWs
       ? config.repos.filter(r => r.workspace === targetWs)
       : config.repos;
 

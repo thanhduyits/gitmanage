@@ -30,6 +30,48 @@
     let currentRepos       = [];
 
     // --- State Management ---
+    function customConfirm(message) {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('confirm-modal');
+        const inner = modal.querySelector('.scale-95') || modal.querySelector('.scale-100');
+        const msgEl = document.getElementById('confirm-message');
+        const btnOk = document.getElementById('btn-ok-confirm');
+        const btnCancel = document.getElementById('btn-cancel-confirm');
+        const btnClose = document.getElementById('btn-close-confirm');
+        
+        msgEl.textContent = message;
+        
+        modal.classList.remove('hidden');
+        void modal.offsetWidth;
+        modal.classList.remove('opacity-0');
+        if (inner) {
+          inner.classList.remove('scale-95');
+          inner.classList.add('scale-100');
+        }
+        
+        const cleanupAndClose = (result) => {
+          modal.classList.add('opacity-0');
+          if (inner) {
+            inner.classList.remove('scale-100');
+            inner.classList.add('scale-95');
+          }
+          setTimeout(() => modal.classList.add('hidden'), 200);
+          
+          btnOk.removeEventListener('click', onOk);
+          btnCancel.removeEventListener('click', onCancel);
+          btnClose.removeEventListener('click', onCancel);
+          resolve(result);
+        };
+        
+        const onOk = () => cleanupAndClose(true);
+        const onCancel = () => cleanupAndClose(false);
+        
+        btnOk.addEventListener('click', onOk);
+        btnCancel.addEventListener('click', onCancel);
+        btnClose.addEventListener('click', onCancel);
+      });
+    }
+
     function showState(state) {
       [stateLoading, stateData, stateEmpty, stateError, stateNoWorkspace].forEach((el) => el.classList.add('hidden'));
       statsBar.classList.add('hidden');
@@ -593,16 +635,27 @@
 
     async function bulkAction(action) {
       if (selectedRepoPaths.size === 0) return;
-      if (!confirm(`Bạn có chắc chắn muốn ${action.toUpperCase()} ${selectedRepoPaths.size} repositories?`)) return;
+      const isConfirmed = await customConfirm(`Bạn có chắc chắn muốn ${action.toUpperCase()} ${selectedRepoPaths.size} repositories?`);
+      if (!isConfirmed) return;
       
       const paths = Array.from(selectedRepoPaths);
       let btnHtmlOriginals = new Map();
-      const actionNameMap = { 'fetch': 'Fetch', 'pull': 'Pull', 'push': 'Push' };
+      const actionNameMap = { 'fetch': 'Fetch', 'pull': 'Pull', 'push': 'Push', 'stash': 'Stash', 'pop': 'Pop' };
       
       let successCount = 0;
       let errorCount = 0;
+      let processedCount = 0;
+      const totalCount = paths.length;
+      
+      const bulkCountEl = document.getElementById('bulk-count');
+      const originalBulkCountText = bulkCountEl ? bulkCountEl.textContent : '';
       
       for (const repoPath of paths) {
+        processedCount++;
+        if (bulkCountEl) {
+          bulkCountEl.innerHTML = `<span class="animate-pulse text-amber-400">Đang xử lý ${processedCount}/${totalCount}...</span>`;
+        }
+        
         const repoIndex = currentRepos.findIndex(r => r.path === repoPath);
         if (repoIndex === -1) continue;
         const repo = currentRepos[repoIndex];
@@ -615,12 +668,15 @@
         });
         
         let btn;
+        let allBtns = [];
         if (tr) {
-           btn = Array.from(tr.querySelectorAll('.btn-action')).find(b => b.textContent.includes(actionNameMap[action]));
+           // Locate the button via its title matching the action
+           btn = Array.from(tr.querySelectorAll('.btn-action')).find(b => b.title && b.title.toLowerCase().includes(action.toLowerCase()));
+           allBtns = Array.from(tr.querySelectorAll('button'));
            if (btn) {
               btnHtmlOriginals.set(repoPath, btn.innerHTML);
               btn.innerHTML = `<svg class="w-4 h-4 spin mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>`;
-              btn.disabled = true;
+              allBtns.forEach(b => b.disabled = true);
            }
         }
         
@@ -641,9 +697,19 @@
           console.error(`Bulk ${action} failed on ${repoPath}`, e);
           errorCount++;
           showToast(`Lỗi ${action} - ${repo.name}:\n${e.message}`, 'error');
+        } finally {
+          if (btn && btnHtmlOriginals.has(repoPath)) {
+            btn.innerHTML = btnHtmlOriginals.get(repoPath);
+            allBtns.forEach(b => b.disabled = false);
+          }
         }
         
+        // We defer re-rendering individual rows to filterReposText() at the end to prevent replacing tr elements containing our tracking state
         updateStats(currentRepos);
+      }
+      
+      if (bulkCountEl) {
+         bulkCountEl.textContent = originalBulkCountText;
       }
       
       if (errorCount === 0) {
@@ -661,7 +727,8 @@
       if (selectedRepoPaths.size === 0) return;
       const paths = Array.from(selectedRepoPaths);
       
-      if (!confirm(`Bạn có chắc muốn xoá [${paths.length}] Repositories này khỏi danh sách quản lý?`)) return;
+      const isConfirmed = await customConfirm(`Bạn có chắc muốn xoá [${paths.length}] Repositories này khỏi danh sách quản lý?`);
+      if (!isConfirmed) return;
 
       try {
         await fetch('/api/repos', {
@@ -694,7 +761,8 @@
       const repo = currentRepos.find(r => r.path === repoPath);
       if(!repo) return;
       
-      if (!confirm(`Xoá repository này khỏi danh sách quản lý?\n${repo.name}`)) return;
+      const isConfirmed = await customConfirm(`Xoá repository này khỏi danh sách quản lý?\n${repo.name}`);
+      if (!isConfirmed) return;
       
       try {
         await fetch('/api/repos', {
