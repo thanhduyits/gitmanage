@@ -349,7 +349,15 @@
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ path: wsPath }),
       });
-      return res.ok;
+      if (res.ok) {
+        try {
+          const data = await res.json();
+          return typeof data.addedCount === 'number' ? data.addedCount : 1;
+        } catch {
+          return 1;
+        }
+      }
+      return -1;
     }
 
     async function loadRepos(forceRefresh = false) {
@@ -409,6 +417,57 @@
       if (row) row.classList.toggle('selected', selectedPaths.has(itemPath));
       if (cb) cb.checked = selectedPaths.has(itemPath);
       updateSelectAllLabel();
+    }
+    
+    window.addManualPath = async function() {
+      const input = document.getElementById('manual-path-input');
+      const btn = document.getElementById('btn-add-manual');
+      if (!input || !btn) return;
+      
+      const path = input.value.trim();
+      if (!path) {
+        showToast('Vui lòng nhập đường dẫn!', 'warning');
+        return;
+      }
+      
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = `<svg class="w-4 h-4 spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Thêm`;
+      btn.disabled = true;
+      document.body.style.cursor = 'wait';
+      
+      try {
+        const addedCount = await addWorkspace(path);
+        if (addedCount > 0) {
+          showToast(`Thêm thành công ${addedCount} repo từ: ${path.split(/[/\\]/).pop()}`, 'success');
+          closeBrowser();
+          await loadWorkspaces();
+          await loadRepos(true);
+          input.value = '';
+        } else if (addedCount === 0) {
+          showToast('Thư mục đã có sẵn hoặc không chứa repo hợp lệ!', 'info');
+          closeBrowser();
+          input.value = '';
+        } else {
+          showToast('Thư mục không tồn tại hoặc lỗi server.', 'error');
+        }
+      } catch (e) {
+        showToast('Lỗi khi thêm thư mục: ' + e.message, 'error');
+      } finally {
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+        document.body.style.cursor = 'default';
+      }
+    };
+    
+    // Add event listener for Enter key on manual path input
+    const manualPathInput = document.getElementById('manual-path-input');
+    if (manualPathInput) {
+      manualPathInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          window.addManualPath();
+        }
+      });
     }
 
     function toggleSelectAll() {

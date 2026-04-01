@@ -160,7 +160,8 @@ app.post('/api/repos/scan', async (req, res) => {
 
     // Save to static list
     foundRepos.forEach(repoInfo => {
-      const exists = config.repos.some(r => r.path === repoInfo.path);
+      const lowerNewPath = repoInfo.path.toLowerCase();
+      const exists = config.repos.some(r => r.path.toLowerCase() === lowerNewPath);
       if (!exists) {
         config.repos.push({ path: repoInfo.path, workspace: repoInfo.workspace });
         addedCount++;
