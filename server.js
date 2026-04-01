@@ -373,7 +373,7 @@ app.get('/api/repo', async (req, res) => {
   }
 
   try {
-    const info = await getRepoInfo(repoPath, workspacePath);
+    const info = await getRepoInfo(repoPath, workspacePath, { skipCache: true });
     res.json(info);
   } catch (err) {
     console.error(`Failed to refresh repo ${repoPath}:`, err);
@@ -636,10 +636,12 @@ app.get('/api/repos', async (req, res) => {
       return res.json([]);
     }
 
+    const forceRefresh = req.query.force === 'true';
+
     // Get info in parallel (internally limited by gitLimit)
     const promises = reposToProcess.map(async (r) => {
       try {
-        return await getRepoInfo(r.path, r.workspace);
+        return await getRepoInfo(r.path, r.workspace, { skipCache: forceRefresh });
       } catch (err) {
         console.error(`Failed to get info for ${r.path}:`, err.message);
         return null; // Ignore errors, it will just drop the repo or we can return error entry

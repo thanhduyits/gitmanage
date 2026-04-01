@@ -352,12 +352,13 @@
       return res.ok;
     }
 
-    async function loadRepos() {
+    async function loadRepos(forceRefresh = false) {
       if (workspaces.length === 0) { showState('no-workspace'); return; }
       showState('loading');
       refreshIcon.classList.add('spin');
       try {
-        const response = await fetch('/api/repos');
+        const url = forceRefresh ? '/api/repos?force=true' : '/api/repos';
+        const response = await fetch(url);
         if (!response.ok) throw new Error(`Server responded with ${response.status}`);
         const repos = await response.json();
         if (repos.error) throw new Error(repos.detail || repos.error);
@@ -1404,3 +1405,106 @@
       
       commitsContainer.innerHTML = commitsHtml;
     }
+
+    // --- Commit Modal ---
+    let commitModalContext = { path: null, workspace: null, rowIndex: null };
+
+    window.openCommitModal = function(repoPath, wsPath, rowIndex) {
+      commitModalContext = { path: repoPath, workspace: wsPath, rowIndex };
+      const modal = document.getElementById('commit-modal');
+      const inner = modal.querySelector('.scale-95') || modal.querySelector('.scale-100');
+      const input = document.getElementById('commit-message');
+      
+      if (input) input.value = '';
+      
+      // Populate modified file list
+      const fileList = document.getElementById('commit-file-list');
+      if (fileList) {
+        const repo = currentRepos.find(r => r.path === repoPath);
+        if (repo && repo.status) {
+          const allFiles = [...(repo.status.modified || []), ...(repo.status.deleted || []), ...(repo.status.not_added || [])];
+          fileList.innerHTML = allFiles.map(f => `<div class="px-2 py-1 rounded-lg bg-white/5 text-amber-300/80">${f}</div>`).join('') || '<div class="text-slate-500 px-2">No changes detected</div>';
+        }
+      }
+      
+      modal.classList.remove('hidden');
+      void modal.offsetWidth;
+      modal.classList.remove('opacity-0');
+      if (inner) {
+        inner.classList.remove('scale-95');
+        inner.classList.add('scale-100');
+      }
+      
+      setTimeout(() => input.focus(), 200);
+    };
+
+    window.closeCommitModal = function() {
+      const modal = document.getElementById('commit-modal');
+      if (!modal) return;
+      const inner = modal.querySelector('.scale-100');
+      modal.classList.add('opacity-0');
+      if (inner) {
+        inner.classList.remove('scale-100');
+        inner.classList.add('scale-95');
+      }
+      setTimeout(() => modal.classList.add('hidden'), 200);
+    };
+
+    window.executeCommit = async function() {
+      const input = document.getElementById('commit-message');
+      const msg = (input && input.value) ? input.value.trim() : '';
+      if (!msg) {
+        showToast('Vui lòng nhập tóm tắt thay đổi (Commit Message)!', 'warning');
+        if (input) input.focus();
+        return;
+      }
+      
+      const btn = document.getElementById('btn-commit-action');
+      let originalText = '';
+      if (btn) {
+        originalText = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<svg class="w-4 h-4 spin mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>`;
+      }
+      
+      const { path, workspace, rowIndex } = commitModalContext;
+      const tr = document.getElementById('repo-row-' + rowIndex);
+      
+      let refreshBtn;
+      if (tr) {
+        refreshBtn = tr.querySelector('.btn-refresh-row svg');
+        if (refreshBtn) refreshBtn.classList.add('spin');
+      }
+
+      try {
+        const res = await fetch('/api/repo/commit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path, workspace, message: msg })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Commit thất bại');
+        
+        window.closeCommitModal();
+        let repoName = path.replace(/\\/g, '/').split('/').filter(Boolean).pop();
+        showToast(`Commit thành công: ${repoName}`, 'success');
+        
+        // Update local object & re-render
+        const originalIndex = currentRepos.findIndex(r => r.path === path);
+        if (originalIndex !== -1) {
+          currentRepos[originalIndex] = data.repo;
+          updateStats(currentRepos);
+        }
+        if (tr) {
+          tr.outerHTML = renderRepoRowInner(data.repo, rowIndex);
+        }
+      } catch (err) {
+        showToast(`Commit thất bại:\\n${err.message}`, 'error');
+      } finally {
+        if(btn) {
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+        }
+        if (refreshBtn) refreshBtn.classList.remove('spin');
+      }
+    };
