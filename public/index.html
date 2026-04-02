@@ -457,23 +457,15 @@
           <div class="flex items-center gap-2">
             <h1 class="text-xl font-bold text-white tracking-tight leading-tight">GitManage</h1>
             <span
-              class="px-1.5 py-0.5 rounded-md bg-accent/10 border border-accent/20 text-[9px] font-bold text-accent tracking-widest uppercase">v1.2.1</span>
+              class="px-1.5 py-0.5 rounded-md bg-accent/10 border border-accent/20 text-[9px] font-bold text-accent tracking-widest uppercase">v1.2.1
+              Beta</span>
           </div>
           <p class="text-[13px] text-slate-400 font-medium">Workspace Orchestrator</p>
         </div>
       </div>
 
       <div class="flex items-center gap-3">
-        <div id="stats-bar" class="hidden items-center gap-2 mr-2">
-          <span id="stat-total"
-            class="text-xs font-medium text-slate-400 bg-surface-card px-2.5 py-1 rounded-full border border-surface-border"></span>
-          <span id="stat-clean"
-            class="text-xs font-medium text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20"></span>
-          <span id="stat-dirty"
-            class="text-xs font-medium text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20"></span>
-          <span id="stat-conflict"
-            class="hidden text-xs font-bold text-rose-400 bg-rose-500/10 px-2.5 py-1 rounded-full border border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.2)]"></span>
-        </div>
+        <!-- Old stats bar removed -->
 
         <button id="btn-search" onclick="toggleSearch()"
           class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 border border-sky-500/20 hover:border-sky-500/40 transition-all duration-200 active:scale-95">
@@ -535,6 +527,71 @@
 
   <!-- Main Content -->
   <main class="max-w-7xl mx-auto px-6 py-8">
+
+    <!-- Dashboard Summary Cards -->
+    <div id="dashboard-stats" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div
+        class="glass-card rounded-2xl p-5 flex items-center justify-between border-l-4 border-l-blue-500 hover:-translate-y-1 transition-transform">
+        <div>
+          <p class="text-sm font-medium text-slate-400 mb-1 uppercase tracking-wider text-[10px]">Total Repositories</p>
+          <h3 id="card-total" class="text-3xl font-bold text-white tracking-tight">0</h3>
+        </div>
+        <div
+          class="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.15)]">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+        </div>
+      </div>
+
+      <div
+        class="glass-card rounded-2xl p-5 flex items-center justify-between border-l-4 border-l-emerald-500 hover:-translate-y-1 transition-transform">
+        <div>
+          <p class="text-sm font-medium text-slate-400 mb-1 uppercase tracking-wider text-[10px]">Clean State</p>
+          <h3 id="card-clean" class="text-3xl font-bold text-emerald-400 tracking-tight">0</h3>
+        </div>
+        <div
+          class="w-12 h-12 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+              d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+      </div>
+
+      <div
+        class="glass-card rounded-2xl p-5 flex items-center justify-between border-l-4 border-l-amber-500 hover:-translate-y-1 transition-transform">
+        <div>
+          <p class="text-sm font-medium text-slate-400 mb-1 uppercase tracking-wider text-[10px]">Pending Changes</p>
+          <h3 id="card-dirty" class="text-3xl font-bold text-amber-400 tracking-tight">0</h3>
+        </div>
+        <div
+          class="w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+        </div>
+      </div>
+
+      <div
+        class="glass-card rounded-2xl p-5 flex items-center justify-between border-l-4 border-l-rose-500 hover:-translate-y-1 transition-transform relative overflow-hidden group">
+        <div class="absolute inset-0 bg-rose-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        <div class="relative z-10">
+          <p class="text-sm font-medium text-slate-400 mb-1 uppercase tracking-wider text-[10px]">Conflicts Discovered
+          </p>
+          <h3 id="card-conflict" class="text-3xl font-bold text-rose-400 tracking-tight">0</h3>
+        </div>
+        <div
+          class="w-12 h-12 rounded-full bg-rose-500/10 flex items-center justify-center text-rose-400 relative z-10 shadow-[0_0_15px_rgba(244,63,94,0.15)]">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+        </div>
+      </div>
+    </div>
 
     <!-- Workspace Chips -->
     <div id="workspaces-bar" class="hidden mb-6">
@@ -958,12 +1015,18 @@
           <div class="flex items-center gap-1 mb-3 p-1 bg-black/40 rounded-xl border border-white/5">
             <button id="branch-tab-local" onclick="switchBranchTab('local')"
               class="branch-tab flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 bg-accent/20 text-accent border border-accent/30">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
               Local <span id="branch-count-local" class="ml-0.5 text-[10px] opacity-70">(0)</span>
             </button>
             <button id="branch-tab-remote" onclick="switchBranchTab('remote')"
               class="branch-tab flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 text-slate-400 hover:text-slate-300 hover:bg-white/5">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+              </svg>
               Remote <span id="branch-count-remote" class="ml-0.5 text-[10px] opacity-70">(0)</span>
             </button>
           </div>

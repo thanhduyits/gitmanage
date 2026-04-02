@@ -28,6 +28,7 @@
     let selectedPaths      = new Set();
     let workspaces         = [];
     let currentRepos       = [];
+    let activeWorkspaceFilter = null;
 
     // --- State Management ---
     function customConfirm(message) {
@@ -74,11 +75,11 @@
 
     function showState(state) {
       [stateLoading, stateData, stateEmpty, stateError, stateNoWorkspace].forEach((el) => el.classList.add('hidden'));
-      statsBar.classList.add('hidden');
-      statsBar.classList.remove('flex');
+      const dashboardStats = document.getElementById('dashboard-stats');
+      if (dashboardStats) dashboardStats.classList.add('hidden');
 
       if (state === 'loading')      stateLoading.classList.remove('hidden');
-      if (state === 'data')         { stateData.classList.remove('hidden'); statsBar.classList.remove('hidden'); statsBar.classList.add('flex'); }
+      if (state === 'data')         { stateData.classList.remove('hidden'); if(dashboardStats) dashboardStats.classList.remove('hidden'); }
       if (state === 'empty')        stateEmpty.classList.remove('hidden');
       if (state === 'error')        stateError.classList.remove('hidden');
       if (state === 'no-workspace') stateNoWorkspace.classList.remove('hidden');
@@ -87,38 +88,38 @@
     // --- Badges ---
     function buildStatusBadge(repo, i) {
       if (repo.error) {
-        return `<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20 shadow-[inset_0_0_12px_rgba(239,68,68,0.1)]">🔴 Error</span>`;
+        return `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium bg-red-500/10 text-red-400 border border-red-500/20">🔴 Error</span>`;
       }
       if (repo.status && repo.status.conflicted && repo.status.conflicted.length > 0) {
         const escapedPath = repo.path.replace(/\\/g, '\\\\');
         const escapedWs = repo.workspace ? repo.workspace.replace(/\\/g, '\\\\') : '';
-        return `<button onclick="openConflictModal('${escapedPath}', '${escapedWs}', ${i})" class="badge-pulse inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20 shadow-[inset_0_0_12px_rgba(244,63,94,0.1)] hover:bg-rose-500/20 hover:border-rose-500/40 transition-all cursor-pointer" title="Click to view conflicts">⚔️ Conflict: ${repo.status.conflicted.length}</button>`;
+        return `<button onclick="openConflictModal('${escapedPath}', '${escapedWs}', ${i})" class="badge-pulse inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30 hover:bg-rose-500/20 hover:border-rose-500/50 transition-all cursor-pointer" title="Click to view conflicts">⚔️ Conflict: ${repo.status.conflicted.length}</button>`;
       }
       if (repo.status.isClean) {
-        return `<span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-[inset_0_0_12px_rgba(16,185,129,0.1)]">🟢 Clean</span>`;
+        return `<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium bg-surface text-emerald-400 border border-emerald-500/20">🟢 Clean</span>`;
       }
       const count = (repo.status.modified?.length || 0) + (repo.status.deleted?.length || 0) + (repo.status.not_added?.length || 0);
       const escapedPath = repo.path.replace(/\\/g, '\\\\');
       const escapedWs = repo.workspace ? repo.workspace.replace(/\\/g, '\\\\') : '';
-      return `<button onclick="openCommitModal('${escapedPath}', '${escapedWs}', ${i})" class="badge-pulse inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 shadow-[inset_0_0_12px_rgba(245,158,11,0.1)] hover:bg-amber-500/20 hover:border-amber-500/40 transition-all cursor-pointer" title="Click to view diff & commit">🟡 Modified: ${count}</button>`;
+      return `<button onclick="openCommitModal('${escapedPath}', '${escapedWs}', ${i})" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-medium bg-surface text-amber-400 border border-amber-500/20 hover:bg-amber-500/10 hover:border-amber-500/40 transition-all cursor-pointer" title="Click to view diff & commit">🟡 Modified: ${count}</button>`;
     }
 
     function buildBranchBadge(repo, i) {
       const branch = repo.branch;
       if (!branch) return '<span class="text-slate-600">—</span>';
       const isMain = ['main', 'master', 'develop'].includes(branch);
-      const cls = isMain ? 'text-sky-400 bg-sky-500/10 border-sky-500/20 shadow-[inset_0_0_12px_rgba(14,165,233,0.1)]' : 'text-violet-400 bg-violet-500/10 border-violet-500/20 shadow-[inset_0_0_12px_rgba(139,92,246,0.1)]';
+      const cls = isMain ? 'text-sky-400 bg-sky-500/5 border-sky-500/20' : 'text-violet-400 bg-violet-500/5 border-violet-500/20';
       const escapedPath = repo.path.replace(/\\/g, '\\\\');
       const escapedWs = repo.workspace ? repo.workspace.replace(/\\/g, '\\\\') : '';
 
       let syncHtml = '';
       if (repo.status) {
-        if (repo.status.behind > 0) syncHtml += `<span class="ml-1.5 flex items-center gap-0.5 text-emerald-400" title="Behind: ${repo.status.behind} commits (Need Pull)"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>${repo.status.behind}</span>`;
-        if (repo.status.ahead > 0) syncHtml += `<span class="ml-1.5 flex items-center gap-0.5 text-amber-400" title="Ahead: ${repo.status.ahead} commits (Need Push)"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>${repo.status.ahead}</span>`;
+        if (repo.status.behind > 0) syncHtml += `<span class="ml-1.5 flex items-center gap-0.5 text-blue-400 bg-blue-500/10 px-1 rounded font-bold" title="Behind: ${repo.status.behind} commits (Need Pull)"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>${repo.status.behind}</span>`;
+        if (repo.status.ahead > 0) syncHtml += `<span class="ml-1.5 flex items-center gap-0.5 text-amber-400 bg-amber-500/10 px-1 rounded font-bold" title="Ahead: ${repo.status.ahead} commits (Need Push)"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>${repo.status.ahead}</span>`;
       }
 
-      return `<button onclick="openBranchModal('${escapedPath}', '${escapedWs}', ${i}, '${branch}')" class="inline-flex items-center px-3 py-1.5 rounded-lg text-[13px] font-mono font-semibold ${cls} border cursor-pointer hover:border-accent/40 hover:ring-2 hover:ring-accent/20 transition-all focus:outline-none" title="Click to change branch">
-        <svg class="w-3 h-3 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      return `<button onclick="openBranchModal('${escapedPath}', '${escapedWs}', ${i}, '${branch}')" class="inline-flex items-center px-3 py-1 rounded-full text-[12px] font-mono font-medium ${cls} border cursor-pointer hover:border-accent/40 hover:bg-surface-hover transition-all focus:outline-none" title="Click to change branch">
+        <svg class="w-3 h-3 mr-1.5 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/></svg>
         ${branch}
         ${syncHtml}
       </button>`;
@@ -130,31 +131,51 @@
       const clean = repos.filter((r) => !r.error && r.status?.isClean).length;
       const conflicts = repos.filter((r) => !r.error && r.status?.conflicted && r.status.conflicted.length > 0).length;
       
-      statTotal.textContent = `${total} repos`;
-      statClean.textContent = `${clean} clean`;
-      statDirty.textContent = `${total - clean} changed`;
-      
-      if (conflicts > 0) {
-        statConflict.textContent = `${conflicts} conflict${conflicts > 1 ? 's' : ''}`;
-        statConflict.classList.remove('hidden');
-      } else {
-        statConflict.classList.add('hidden');
+      const dashboardStats = document.getElementById('dashboard-stats');
+      if (dashboardStats) {
+        dashboardStats.classList.remove('hidden');
+        document.getElementById('card-total').textContent = total;
+        document.getElementById('card-clean').textContent = clean;
+        document.getElementById('card-dirty').textContent = total - clean;
+        document.getElementById('card-conflict').textContent = conflicts;
       }
     }
 
     // --- Render Workspace Chips ---
+    window.setWorkspaceFilter = function(ws, event) {
+      if (event && event.target.closest('.ws-remove')) return;
+      if (activeWorkspaceFilter === ws) {
+         activeWorkspaceFilter = null;
+      } else {
+         activeWorkspaceFilter = ws;
+      }
+      renderWorkspaces();
+      filterReposText();
+    };
+
     function renderWorkspaces() {
       if (workspaces.length === 0) { workspacesBar.classList.add('hidden'); return; }
       workspacesBar.classList.remove('hidden');
-      workspaceChips.innerHTML = workspaces.map((ws) => {
+      
+      const allBtnHtml = `
+        <div onclick="setWorkspaceFilter(null, event)" class="ws-chip flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-mono select-none cursor-pointer tracking-tight transition-all duration-200 ${!activeWorkspaceFilter ? 'bg-accent/10 border-accent/30 text-accent font-semibold shadow-[0_0_10px_rgba(99,102,241,0.2)]' : 'bg-surface border-surface-border text-slate-400 hover:border-slate-500 hover:text-slate-200'}">
+          <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
+          All Workspaces
+        </div>
+      `;
+
+      workspaceChips.innerHTML = allBtnHtml + workspaces.map((ws) => {
         const wsName = ws.split(/[/\\]/).filter(Boolean).pop();
+        const isActive = activeWorkspaceFilter === ws;
         return `
-        <div class="ws-chip flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface border border-surface-border text-xs font-mono text-slate-300 group cursor-default">
-          <svg class="w-3.5 h-3.5 text-accent/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div onclick="setWorkspaceFilter('${ws.replace(/\\/g, '\\\\')}', event)" class="ws-chip flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[13px] font-mono select-none cursor-pointer tracking-tight transition-all duration-200 ${isActive ? 'bg-sky-500/10 border-sky-500/30 text-sky-400 font-semibold shadow-[0_0_10px_rgba(14,165,233,0.2)]' : 'bg-surface border-surface-border text-slate-400 hover:border-slate-500 hover:text-slate-200'}">
+          <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
           </svg>
           <span class="truncate max-w-[200px]" title="${ws}">${wsName}</span>
-          <button onclick="removeWorkspace('${ws.replace(/\\/g, '\\\\')}')" class="ws-remove ml-1 w-4 h-4 flex items-center justify-center rounded text-slate-600 hover:text-red-400 transition-colors" title="Remove">
+          <button onclick="removeWorkspace('${ws.replace(/\\/g, '\\\\')}')" class="ws-remove ml-1 w-4 h-4 flex items-center justify-center rounded text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors" title="Remove">
             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
@@ -202,33 +223,38 @@
         <td class="px-3 sm:px-6 py-3 sm:py-4">${buildBranchBadge(repo, i)}</td>
         <td class="px-3 sm:px-6 py-3 sm:py-4">${buildStatusBadge(repo, i)}</td>
         <td class="px-3 sm:px-6 py-3 sm:py-4">
-          <div class="grid grid-cols-4 gap-1 sm:gap-2 w-max ml-auto opacity-70 group-hover:opacity-100 transition-opacity">
-            <button onclick="openFolder('${escapedPath}')" class="btn-action btn-linear p-1.5 sm:p-2 text-slate-400 hover:text-white hover:!border-slate-500/40 hover:bg-white/10 rounded-xl transition-all shadow-sm flex items-center justify-center" title="Open Folder (Explorer)">
-              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+          <div class="flex items-center justify-end gap-1.5 opacity-40 group-hover:opacity-100 transition-all duration-300">
+            <button onclick="repoAction('${escapedPath}', '${escapedWs}', ${i}, 'fetch', this)" class="btn-action btn-linear p-1.5 text-slate-400 hover:text-sky-400 hover:!border-sky-500/40 hover:bg-sky-500/10 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center" title="Fetch">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3 3m0 0l-3-3m3 3V8"/></svg>
             </button>
-            <button onclick="repoAction('${escapedPath}', '${escapedWs}', ${i}, 'fetch', this)" class="btn-action btn-linear p-1.5 sm:p-2 text-slate-300 hover:text-sky-400 hover:!border-sky-500/40 hover:bg-sky-500/10 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center" title="Fetch from remote">
-              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3 3m0 0l-3-3m3 3V8"/></svg>
+            <button onclick="repoAction('${escapedPath}', '${escapedWs}', ${i}, 'pull', this)" class="btn-action btn-linear p-1.5 text-slate-400 hover:text-emerald-400 hover:!border-emerald-500/40 hover:bg-emerald-500/10 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center" title="Pull">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
             </button>
-            <button onclick="repoAction('${escapedPath}', '${escapedWs}', ${i}, 'pull', this)" class="btn-action btn-linear p-1.5 sm:p-2 text-slate-300 hover:text-emerald-400 hover:!border-emerald-500/40 hover:bg-emerald-500/10 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center" title="Pull latest changes">
-              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            <button onclick="repoAction('${escapedPath}', '${escapedWs}', ${i}, 'push', this)" class="btn-action btn-linear p-1.5 text-slate-400 hover:text-amber-400 hover:!border-amber-500/40 hover:bg-amber-500/10 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center" title="Push">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
             </button>
-            <button onclick="repoAction('${escapedPath}', '${escapedWs}', ${i}, 'push', this)" class="btn-action btn-linear p-1.5 sm:p-2 text-slate-300 hover:text-amber-400 hover:!border-amber-500/40 hover:bg-amber-500/10 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center" title="Push local commits">
-              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-            </button>
-            <button onclick="repoAction('${escapedPath}', '${escapedWs}', ${i}, 'stash', this)" class="btn-action btn-linear p-1.5 sm:p-2 text-slate-300 hover:text-white hover:!border-slate-500/40 hover:bg-white/10 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center" title="Stash Changes">
-              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
-            </button>
-            <button onclick="repoAction('${escapedPath}', '${escapedWs}', ${i}, 'pop', this)" class="btn-action btn-linear p-1.5 sm:p-2 text-slate-300 hover:text-white hover:!border-slate-500/40 hover:bg-white/10 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center" title="Pop Stash">
-              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 8H5M19 8a2 2 0 100-4H5a2 2 0 100 4M19 8v10a2 2 0 01-2 2H7a2 2 0 01-2-2V8m9 4H8m4 0v4"/></svg>
-            </button>
-            <button onclick="refreshSingleRepo('${escapedPath}', '${escapedWs}', ${i})" class="btn-refresh-row p-1.5 sm:p-2 text-slate-400 hover:text-white bg-white/5 hover:bg-accent/20 border border-transparent hover:border-accent/40 rounded-xl transition-all disabled:opacity-50 shadow-sm flex items-center justify-center" title="Refresh local status">
-              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
-            <button onclick="removeSingleRepoWorkspace('${escapedPath}')" class="btn-refresh-row p-1.5 sm:p-2 text-slate-400 hover:text-red-400 bg-white/5 hover:bg-red-500/10 border border-transparent hover:border-red-500/40 rounded-xl transition-all disabled:opacity-50 shadow-sm flex items-center justify-center" title="Remove Repository">
-              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
+            <div class="relative group/menu mt-1">
+              <button class="btn-linear p-1.5 text-slate-400 hover:text-white hover:!border-white/20 hover:bg-white/10 rounded-xl transition-all flex items-center justify-center" title="More Options">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/></svg>
+              </button>
+              <div class="absolute right-0 top-full mt-2 w-44 bg-surface-card border border-surface-border rounded-xl shadow-xl opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all z-50 p-1 origin-top-right transform scale-95 group-hover/menu:scale-100">
+                <button onclick="repoAction('${escapedPath}', '${escapedWs}', ${i}, 'stash', this)" class="w-full flex items-center gap-2 px-3 py-2 text-[13px] font-medium text-slate-300 hover:text-accent hover:bg-accent/10 rounded-lg transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg> Stash
+                </button>
+                <button onclick="repoAction('${escapedPath}', '${escapedWs}', ${i}, 'pop', this)" class="w-full flex items-center gap-2 px-3 py-2 text-[13px] font-medium text-slate-300 hover:text-accent hover:bg-accent/10 rounded-lg transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 8H5M19 8a2 2 0 100-4H5a2 2 0 100 4M19 8v10a2 2 0 01-2 2H7a2 2 0 01-2-2V8m9 4H8m4 0v4"/></svg> Pop
+                </button>
+                <button onclick="openFolder('${escapedPath}')" class="w-full flex items-center gap-2 px-3 py-2 text-[13px] font-medium text-slate-300 hover:text-accent hover:bg-accent/10 rounded-lg transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg> Open Directory
+                </button>
+                <button onclick="refreshSingleRepo('${escapedPath}', '${escapedWs}', ${i})" class="w-full flex items-center gap-2 px-3 py-2 text-[13px] font-medium text-slate-300 hover:text-accent hover:bg-accent/10 rounded-lg transition-colors border-t border-surface-border mt-1 pt-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Refresh Status
+                </button>
+                <button onclick="removeSingleRepoWorkspace('${escapedPath}')" class="w-full flex items-center gap-2 px-3 py-2 text-[13px] font-medium text-red-400 hover:bg-red-500/10 rounded-lg transition-colors border-t border-surface-border mt-1 pt-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg> Remove Repo
+                </button>
+              </div>
+            </div>
           </div>
         </td>
       `;
@@ -816,6 +842,9 @@
                (repo.workspace && repo.workspace.toLowerCase().includes(term));
                
         if (!matchText) return false;
+        
+        // Workspace Tag Match
+        if (activeWorkspaceFilter && repo.workspace !== activeWorkspaceFilter) return false;
         
         // Status Match
         if (statusFilter === 'all') return true;

@@ -62,7 +62,7 @@ async function withRepoLock(repoPath, fn) {
 
 // 3. In-Memory Cache - Avoid re-scanning repos that haven't changed
 const repoCache = new Map();
-const CACHE_TTL_MS = 5_000; // Cache valid for 30 seconds
+const CACHE_TTL_MS = 5_000; // Cache valid for x seconds
 
 function getCachedRepo(repoPath) {
   const entry = repoCache.get(repoPath);
