@@ -62,7 +62,7 @@ async function withRepoLock(repoPath, fn) {
 
 // 3. In-Memory Cache - Avoid re-scanning repos that haven't changed
 const repoCache = new Map();
-const CACHE_TTL_MS = 60_000; // Cache valid for 30 seconds
+const CACHE_TTL_MS = 5_000; // Cache valid for 30 seconds
 
 function getCachedRepo(repoPath) {
   const entry = repoCache.get(repoPath);
@@ -515,8 +515,10 @@ app.get('/api/repo/graph', async (req, res) => {
     const log = await git.log({
       format: {
         hash: '%h',
+        full_hash: '%H',
         parents: '%p',
         author_name: '%an',
+        author_email: '%ae',
         date: '%ai',
         message: '%s',
         refs: '%D'
@@ -551,21 +553,21 @@ app.post('/api/repo/commit', async (req, res) => {
   try {
     const result = await withRepoLock(repoPath, () => gitLimit(async () => {
       const git = simpleGit(repoPath);
-      
+
       // Selective staging: add only specified files, or all if no files specified
       if (Array.isArray(files) && files.length > 0) {
         await git.add(files);
       } else {
         await git.add('.');
       }
-      
+
       await git.commit(message);
-      
+
       // Optional push after commit
       if (shouldPush) {
         await git.push();
       }
-      
+
       invalidateCache(repoPath);
       const info = await getRepoInfo(repoPath, workspace, { skipCache: true });
       return { message: shouldPush ? 'Committed and pushed successfully' : 'Committed successfully', repo: info };
@@ -687,6 +689,271 @@ app.get('/api/repos', async (req, res) => {
   } catch (err) {
     console.error('Failed to get repositories:', err);
     res.status(500).json({ error: 'Failed to get repositories', detail: err.message });
+  }
+});
+
+// ===== REPO DETAIL PAGE APIs =====
+
+// GET /api/repo/detail - Aggregate detail info for a single repo
+app.get('/api/repo/detail', async (req, res) => {
+  const repoPath = req.query.path;
+  if (!repoPath) return res.status(400).json({ error: 'Missing path' });
+
+  try {
+    const result = await gitLimit(async () => {
+      const git = simpleGit(repoPath);
+      const [branchSummary, statusSummary, remotes, log, tagList] = await Promise.all([
+        git.branch(),
+        git.status(),
+        git.getRemotes(true),
+        git.log({ maxCount: 20, '--all': null }),
+        git.tags(),
+      ]);
+
+      const originRemote = remotes.find(r => r.name === 'origin');
+      const remoteUrl = originRemote?.refs?.fetch || originRemote?.refs?.push || null;
+
+      // Separate local and remote branches
+      const localBranches = branchSummary.all.filter(b => !b.startsWith('remotes/'));
+      const remoteBranches = branchSummary.all.filter(b => b.startsWith('remotes/'));
+
+      return {
+        name: path.basename(repoPath),
+        path: repoPath,
+        branch: branchSummary.current,
+        remoteUrl,
+        localBranches,
+        remoteBranches,
+        status: {
+          modified: statusSummary.modified,
+          deleted: statusSummary.deleted,
+          not_added: statusSummary.not_added,
+          conflicted: statusSummary.conflicted || [],
+          ahead: statusSummary.ahead,
+          behind: statusSummary.behind,
+          isClean: statusSummary.isClean(),
+          files: statusSummary.files || [],
+        },
+        recentCommits: log.all,
+        tags: tagList.all,
+      };
+    });
+    res.json(result);
+  } catch (err) {
+    console.error(`Detail failed for ${repoPath}:`, err.message);
+    res.status(500).json({ error: 'Failed to get repo detail', detail: err.message });
+  }
+});
+
+// POST /api/repo/create-branch - Create a new branch from an existing branch
+app.post('/api/repo/create-branch', async (req, res) => {
+  const { path: repoPath, name, from } = req.body;
+  if (!repoPath || !name) return res.status(400).json({ error: 'Missing path or branch name' });
+
+  try {
+    const result = await withRepoLock(repoPath, () => gitLimit(async () => {
+      const git = simpleGit(repoPath);
+
+      // Validate branch name
+      const sanitized = name.trim();
+      if (/\s/.test(sanitized) || /[~^:?*\[\\]/.test(sanitized)) {
+        throw new Error('Invalid branch name. Avoid spaces and special characters: ~ ^ : ? * [ \\');
+      }
+
+      // Check if branch already exists
+      const branches = await git.branchLocal();
+      if (branches.all.includes(sanitized)) {
+        throw new Error(`Branch "${sanitized}" already exists`);
+      }
+
+      // Create branch: git checkout -b <name> [from]
+      const args = ['-b', sanitized];
+      if (from) {
+        // Handle remote branch reference
+        const fromRef = from.startsWith('remotes/') ? from.replace('remotes/', '') : from;
+        args.push(fromRef);
+      }
+      await git.checkout(args);
+
+      invalidateCache(repoPath);
+      return { message: `Branch "${sanitized}" created successfully`, branch: sanitized };
+    }));
+    res.json(result);
+  } catch (err) {
+    console.error('Create branch error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/repo/compare - Compare two branches (commits + diff stats)
+app.post('/api/repo/compare', async (req, res) => {
+  const { path: repoPath, base, compare } = req.body;
+  if (!repoPath || !base || !compare) {
+    return res.status(400).json({ error: 'Missing path, base, or compare branch' });
+  }
+
+  try {
+    const result = await gitLimit(async () => {
+      const git = simpleGit(repoPath);
+
+      // Resolve ref names (strip remotes/ prefix for git log)
+      const baseRef = base.startsWith('remotes/') ? base.replace('remotes/', '') : base;
+      const compareRef = compare.startsWith('remotes/') ? compare.replace('remotes/', '') : compare;
+
+      // Get commits that are in compare but not in base
+      const logAhead = await git.log({ from: baseRef, to: compareRef }).catch(() => ({ all: [] }));
+      // Get commits that are in base but not in compare (behind)
+      const logBehind = await git.log({ from: compareRef, to: baseRef }).catch(() => ({ all: [] }));
+
+      // Get diff stats
+      let diffStats = [];
+      let diffSummary = { changed: 0, insertions: 0, deletions: 0 };
+      try {
+        const diffRaw = await git.raw(['diff', '--stat', `${baseRef}...${compareRef}`]);
+        if (diffRaw && diffRaw.trim()) {
+          const lines = diffRaw.trim().split('\n');
+          // Last line is summary
+          const summaryLine = lines[lines.length - 1];
+          const summaryMatch = summaryLine.match(/(\d+) files? changed(?:, (\d+) insertions?\(\+\))?(?:, (\d+) deletions?\(-\))?/);
+          if (summaryMatch) {
+            diffSummary = {
+              changed: parseInt(summaryMatch[1]) || 0,
+              insertions: parseInt(summaryMatch[2]) || 0,
+              deletions: parseInt(summaryMatch[3]) || 0,
+            };
+          }
+          // File lines
+          diffStats = lines.slice(0, -1).map(line => {
+            const match = line.trim().match(/^(.+?)\s+\|\s+(\d+)\s+([+-]+)?$/);
+            if (match) {
+              return { file: match[1].trim(), changes: parseInt(match[2]), bar: match[3] || '' };
+            }
+            return { file: line.trim(), changes: 0, bar: '' };
+          }).filter(d => d.file);
+        }
+      } catch { /* diff may fail if branches are incomparable */ }
+
+      return {
+        ahead: logAhead.all || [],     // commits in compare but not in base
+        behind: logBehind.all || [],    // commits in base but not in compare
+        diffStats,
+        diffSummary,
+      };
+    });
+    res.json(result);
+  } catch (err) {
+    console.error('Compare error:', err.message);
+    res.status(500).json({ error: 'Failed to compare branches', detail: err.message });
+  }
+});
+
+// GET /api/repo/commit-detail - Get full detail for a single commit
+app.get('/api/repo/commit-detail', async (req, res) => {
+  const repoPath = req.query.path;
+  const hash = req.query.hash;
+  if (!repoPath || !hash) return res.status(400).json({ error: 'Missing path or hash' });
+  try {
+    const result = await gitLimit(async () => {
+      const git = simpleGit(repoPath);
+      const [info, filesRaw] = await Promise.all([
+        git.raw(['log', '-1', `--format=%H%x00%h%x00%an%x00%ae%x00%ai%x00%cn%x00%ce%x00%ci%x00%P%x00%s%x00%b`, hash]),
+        git.raw(['diff-tree', '--no-commit-id', '-r', '--name-status', hash]),
+      ]);
+      const parts = info.split('\x00');
+      const files = filesRaw.trim() ? filesRaw.trim().split('\n').filter(Boolean).map(line => {
+        const tab = line.indexOf('\t');
+        return { status: line.substring(0, tab).charAt(0), file: line.substring(tab + 1) };
+      }) : [];
+      return {
+        hash: parts[0], shortHash: parts[1],
+        authorName: parts[2], authorEmail: parts[3], authorDate: parts[4],
+        committerName: parts[5], committerEmail: parts[6], committerDate: parts[7],
+        parents: parts[8] || '', subject: parts[9] || '',
+        body: (parts[10] || '').trim(), files,
+      };
+    });
+    res.json(result);
+  } catch (err) {
+    console.error('Commit detail error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/repo/file-diff - Get diff of a file for a specific commit
+app.get('/api/repo/file-diff', async (req, res) => {
+  const { path: repoPath, hash, file } = req.query;
+  if (!repoPath || !hash || !file) return res.status(400).json({ error: 'Missing path, hash, or file' });
+  try {
+    const result = await gitLimit(async () => {
+      const git = simpleGit(repoPath);
+      let diffRaw = '';
+      if (hash === 'WORKING_DIR') {
+        try {
+          diffRaw = await git.raw(['diff', 'HEAD', '--', file]);
+        } catch {
+          diffRaw = await git.raw(['diff', '--', file]).catch(() => '');
+        }
+      } else {
+        diffRaw = await git.raw(['show', '--format=', hash, '--', file]);
+      }
+      return { diff: diffRaw };
+    });
+    res.json(result);
+  } catch (err) {
+    console.error('File diff error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/repo/merge - Merge a branch into the current branch
+app.post('/api/repo/merge', async (req, res) => {
+  const { path: repoPath, workspace, branch, noFf } = req.body;
+  if (!repoPath || !branch) return res.status(400).json({ error: 'Missing path or branch' });
+
+  try {
+    const result = await withRepoLock(repoPath, () => gitLimit(async () => {
+      const git = simpleGit(repoPath);
+
+      // Build merge args
+      const mergeRef = branch.startsWith('remotes/') ? branch.replace('remotes/', '') : branch;
+      const options = noFf ? ['--no-ff'] : [];
+
+      await git.merge([mergeRef, ...options]);
+
+      invalidateCache(repoPath);
+      const info = await getRepoInfo(repoPath, workspace || '', { skipCache: true });
+      return { message: `Successfully merged "${mergeRef}" into current branch`, repo: info };
+    }));
+    res.json(result);
+  } catch (err) {
+    console.error('Merge error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/repo/resolve-conflict - Resolve a conflicted file
+app.post('/api/repo/resolve-conflict', async (req, res) => {
+  const { path: repoPath, file, resolution, workspace } = req.body;
+  if (!repoPath || !file || !resolution) return res.status(400).json({ error: 'Missing path, file, or resolution' });
+  try {
+    const result = await withRepoLock(repoPath, () => gitLimit(async () => {
+      const git = simpleGit(repoPath);
+      if (resolution === 'ours') {
+        await git.checkout(['--ours', '--', file]);
+      } else if (resolution === 'theirs') {
+        await git.checkout(['--theirs', '--', file]);
+      } else {
+        throw new Error('Resolution must be ours or theirs');
+      }
+      await git.add(file);
+      invalidateCache(repoPath);
+      const info = await getRepoInfo(repoPath, workspace || '', { skipCache: true });
+      return { message: `Resolved conflict in ${file} using ${resolution}`, repo: info };
+    }));
+    res.json(result);
+  } catch (err) {
+    console.error('Resolve error:', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 

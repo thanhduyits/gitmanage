@@ -185,7 +185,7 @@
               </svg>
             </div>
             <div class="min-w-0">
-              <p class="text-[14px] sm:text-[15px] font-semibold text-slate-200 tracking-tight leading-snug cursor-pointer hover:text-accent transition-colors w-fit truncate" onclick="openGraphModal('${escapedPath}', '${repo.name}')" title="${repo.remoteUrl || repo.path}">${repo.name}</p>
+              <p class="text-[14px] sm:text-[15px] font-semibold text-slate-200 tracking-tight leading-snug cursor-pointer hover:text-accent transition-colors w-fit truncate" onclick="window.location.href='/repo.html?path=${encodedPath}'" title="Click to open detail — ${repo.remoteUrl || repo.path}">${repo.name}</p>
               <p class="text-[11px] sm:text-[12px] text-slate-500 font-mono tracking-tight truncate max-w-[150px] sm:max-w-[200px]" title="${repo.remoteUrl || repo.path}">${(() => {
                 if (repo.remoteUrl) {
                   const httpUrl = repo.remoteUrl.startsWith('git@') 

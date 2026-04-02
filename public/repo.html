@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Repo Detail — GitManage</title>
+  <meta name="description" content="GitKraken-style repository detail view" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --bg-main: #0e1017;
+      --bg-panel: #0c0e14;
+      --bg-toolbar: #0e1017;
+      --bg-hover: #161b28;
+      --bg-active: #1a2035;
+      --border: #1e2233;
+      --border-light: #252a3a;
+      --text-primary: #e2e8f0;
+      --text-secondary: #94a3b8;
+      --text-muted: #4b5563;
+      --accent: #6366f1;
+      --accent-hover: #818cf8;
+    }
+    body {
+      font-family: 'Outfit','Inter',system-ui,sans-serif;
+      background: var(--bg-main);
+      color: var(--text-primary);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      font-size: 13px;
+    }
+    ::-webkit-scrollbar { width:6px; height:6px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:#252a3a; border-radius:99px; }
+    ::-webkit-scrollbar-thumb:hover { background:#3a3f52; }
+    button { cursor:pointer; font-family:inherit; }
+    input,select { font-family:inherit; }
+
+    /* === TOOLBAR === */
+    .toolbar {
+      height: 46px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-toolbar);
+      flex-shrink: 0;
+      gap: 8px;
+    }
+    .toolbar-left { display:flex; align-items:center; gap:8px; }
+    .toolbar-center { flex:1; display:flex; align-items:center; justify-content:center; gap:2px; }
+    .toolbar-right { display:flex; align-items:center; gap:4px; }
+    .toolbar .back-btn {
+      display:flex; align-items:center; gap:4px;
+      padding:4px 10px; border-radius:6px;
+      color:var(--text-secondary); text-decoration:none;
+      font-size:12px; font-weight:500;
+      border:1px solid transparent;
+      transition:all 0.15s;
+    }
+    .toolbar .back-btn:hover { background:var(--bg-hover); color:#fff; border-color:var(--border-light); }
+    .toolbar .divider { width:1px; height:20px; background:var(--border); margin:0 4px; }
+    .toolbar .repo-name {
+      font-weight:700; font-size:14px; color:#fff;
+      max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
+    .toolbar .branch-badge {
+      display:inline-flex; align-items:center; gap:4px;
+      padding:2px 8px; border-radius:4px;
+      font-size:11px; font-weight:600; font-family:'JetBrains Mono',monospace;
+      background:rgba(99,102,241,0.12); color:#818cf8;
+      border:1px solid rgba(99,102,241,0.25);
+    }
+    .toolbar .status-badge {
+      display:inline-flex; align-items:center; gap:3px;
+      padding:2px 8px; border-radius:4px;
+      font-size:10px; font-weight:600;
+    }
+    .tb-btn {
+      display:flex; flex-direction:column; align-items:center; gap:1px;
+      padding:4px 10px; border-radius:6px;
+      background:transparent; border:1px solid transparent;
+      color:var(--text-secondary); font-size:10px; font-weight:500;
+      transition:all 0.15s; position:relative;
+    }
+    .tb-btn:hover { background:var(--bg-hover); color:#fff; border-color:var(--border-light); }
+    .tb-btn:active { transform:scale(0.95); }
+    .tb-btn:disabled { opacity:0.35; pointer-events:none; }
+    .tb-btn svg { width:16px; height:16px; }
+    .tb-btn.loading svg { animation:spin 1s linear infinite; }
+
+    /* === 3-PANEL LAYOUT === */
+    .app-layout { display:flex; flex:1; overflow:hidden; }
+
+    /* === LEFT SIDEBAR === */
+    .sidebar {
+      width:210px; flex-shrink:0;
+      background:var(--bg-panel);
+      display:flex; flex-direction:column;
+      overflow-y:auto;
+    }
+    .sidebar-section { border-bottom:1px solid var(--border); }
+    .section-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:8px 12px; cursor:pointer; user-select:none;
+      font-size:11px; font-weight:700; color:var(--text-muted);
+      text-transform:uppercase; letter-spacing:0.08em;
+      transition:color 0.15s;
+    }
+    .section-header:hover { color:var(--text-secondary); }
+    .section-header .arrow { transition:transform 0.2s; font-size:10px; }
+    .section-header.collapsed .arrow { transform:rotate(-90deg); }
+    .section-count {
+      font-size:10px; font-weight:600;
+      background:rgba(255,255,255,0.05); padding:1px 6px; border-radius:8px;
+      color:var(--text-muted);
+    }
+    .branch-list { padding:2px 0; }
+    .branch-list.collapsed { display:none; }
+    .branch-item {
+      display:flex; align-items:center; gap:6px;
+      padding:4px 12px 4px 20px;
+      font-size:12px; color:var(--text-secondary);
+      cursor:pointer; transition:all 0.1s;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .branch-item:hover { background:var(--bg-hover); color:#fff; }
+    .branch-item.active { background:rgba(99,102,241,0.1); color:#818cf8; font-weight:600; }
+    .branch-item .branch-icon { width:14px; height:14px; flex-shrink:0; opacity:0.5; }
+    .branch-item .branch-name { overflow:hidden; text-overflow:ellipsis; }
+
+    /* === CENTER: COMMIT GRAPH === */
+    .graph-panel { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; }
+    .graph-header {
+      display:flex; align-items:center; height:28px;
+      padding:0 16px; border-bottom:1px solid var(--border);
+      background:var(--bg-panel);
+      font-size:11px; font-weight:600; color:var(--text-muted);
+      text-transform:uppercase; letter-spacing:0.05em;
+      flex-shrink:0;
+    }
+    .graph-viewport { flex:1; overflow-y:auto; position:relative; }
+    .graph-inner { position:relative; }
+    #graph-svg { position:absolute; left:0; top:0; pointer-events:none; z-index:1; }
+    .commit-row {
+      display:flex; align-items:center; height:34px;
+      border-bottom:1px solid rgba(30,34,51,0.5);
+      cursor:pointer; transition:background 0.1s;
+      position:relative; z-index:2;
+    }
+    .commit-row:hover { background:rgba(255,255,255,0.02); }
+    .commit-row.selected { background:rgba(99,102,241,0.08); }
+    .commit-row .graph-cell { flex-shrink:0; height:34px; }
+    .commit-row .info-cell {
+      flex:1; display:flex; align-items:center; gap:8px;
+      min-width:0; padding:0 12px; height:100%;
+    }
+    .commit-msg {
+      flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      font-size:12px; color:var(--text-primary); font-weight:400;
+    }
+    .commit-refs { display:flex; gap:4px; flex-shrink:0; }
+    .ref-badge {
+      font-size:10px; font-weight:600; padding:1px 6px; border-radius:3px;
+      font-family:'JetBrains Mono',monospace; white-space:nowrap;
+      max-width:120px; overflow:hidden; text-overflow:ellipsis;
+    }
+    .ref-badge.local { background:rgba(34,197,94,0.12); color:#4ade80; border:1px solid rgba(34,197,94,0.2); }
+    .ref-badge.remote { background:rgba(56,189,248,0.1); color:#38bdf8; border:1px solid rgba(56,189,248,0.2); }
+    .ref-badge.tag { background:rgba(251,191,36,0.1); color:#fbbf24; border:1px solid rgba(251,191,36,0.2); }
+    .ref-badge.head { background:rgba(99,102,241,0.15); color:#818cf8; border:1px solid rgba(99,102,241,0.3); }
+    .commit-author-cell {
+      width:140px; flex-shrink:0; display:flex; align-items:center; gap:6px;
+      overflow:hidden;
+    }
+    .author-avatar {
+      width:22px; height:22px; border-radius:50%; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:9px; font-weight:700; color:#fff;
+    }
+    .author-name { font-size:11px; color:var(--text-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .commit-date-cell {
+      width:120px; flex-shrink:0; text-align:right;
+      font-size:11px; color:var(--text-muted); padding-right:12px;
+    }
+
+    /* === RIGHT: COMMIT DETAIL PANEL === */
+    .detail-panel {
+      width:340px; flex-shrink:0;
+      background:var(--bg-panel);
+      overflow-y:auto;
+      display:flex; flex-direction:column;
+    }
+    .detail-placeholder {
+      flex:1; display:flex; align-items:center; justify-content:center;
+      color:var(--text-muted); font-size:12px; font-style:italic;
+    }
+    .detail-header {
+      padding:14px 16px 10px;
+      border-bottom:1px solid var(--border);
+    }
+    .detail-hash {
+      display:flex; align-items:center; gap:6px;
+      font-size:11px; color:var(--text-muted);
+    }
+    .detail-hash code {
+      font-family:'JetBrains Mono',monospace;
+      color:var(--text-secondary); font-size:11px;
+    }
+    .detail-hash .copy-btn {
+      background:none; border:none; color:var(--text-muted);
+      padding:2px; cursor:pointer; transition:color 0.15s;
+    }
+    .detail-hash .copy-btn:hover { color:#fff; }
+    .detail-subject {
+      font-size:15px; font-weight:700; color:#fff;
+      margin-top:8px; line-height:1.4;
+    }
+    .detail-body {
+      font-size:12px; color:var(--text-secondary);
+      margin-top:6px; line-height:1.5; white-space:pre-wrap;
+    }
+    .detail-meta { padding:12px 16px; border-bottom:1px solid var(--border); }
+    .meta-row {
+      display:flex; align-items:flex-start; gap:8px; margin-bottom:8px;
+    }
+    .meta-row:last-child { margin-bottom:0; }
+    .meta-avatar {
+      width:28px; height:28px; border-radius:50%; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:10px; font-weight:700; color:#fff;
+    }
+    .meta-info { flex:1; min-width:0; }
+    .meta-name { font-size:12px; font-weight:600; color:var(--text-primary); }
+    .meta-detail { font-size:11px; color:var(--text-muted); }
+    .meta-label {
+      font-size:10px; font-weight:600; color:var(--text-muted);
+      text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;
+    }
+    .meta-parent {
+      font-family:'JetBrains Mono',monospace;
+      font-size:11px; color:var(--accent-hover);
+      cursor:pointer; text-decoration:none;
+    }
+    .meta-parent:hover { text-decoration:underline; }
+
+    /* === FILE LIST === */
+    .detail-files { padding:0; flex:1; }
+    .files-header {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 16px;
+      font-size:11px; font-weight:700; color:var(--text-muted);
+      text-transform:uppercase; letter-spacing:0.05em;
+      border-bottom:1px solid var(--border);
+      position:sticky; top:0; background:var(--bg-panel); z-index:2;
+    }
+    .files-count { font-weight:600; }
+    .file-item {
+      display:flex; align-items:center; gap:8px;
+      padding:5px 16px;
+      font-size:12px; color:var(--text-secondary);
+      border-bottom:1px solid rgba(30,34,51,0.4);
+      font-family:'JetBrains Mono',monospace;
+      transition:background 0.1s;
+      cursor:pointer;
+    }
+    .file-item:hover { background:var(--bg-hover); }
+    .file-status {
+      width:16px; height:16px; border-radius:3px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:10px; font-weight:800;
+    }
+    .file-status.M { background:rgba(251,191,36,0.15); color:#fbbf24; }
+    .file-status.A { background:rgba(34,197,94,0.15); color:#4ade80; }
+    .file-status.D { background:rgba(239,68,68,0.15); color:#ef4444; }
+    .file-status.R { background:rgba(99,102,241,0.15); color:#818cf8; }
+    .file-status.\? { background:rgba(156,163,175,0.15); color:#9ca3af; }
+    .file-status.\! { background:rgba(239,68,68,0.25); color:#ef4444; border: 1px solid rgba(239,68,68,0.5); }
+    .file-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; }
+
+    /* === STAGING PANEL === */
+    .staging-panel { display:flex; flex-direction:column; height:100%; }
+    .staging-header { padding:14px 16px; border-bottom:1px solid var(--border); }
+    .commit-box { background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:12px; }
+    .commit-textarea { width:100%; background:transparent; border:none; outline:none; color:var(--text-primary); font-size:13px; resize:vertical; min-height:60px; font-family:inherit; margin-bottom:8px; }
+    .commit-btn { width:100%; padding:8px; background:var(--accent); color:#fff; border:none; border-radius:6px; font-weight:600; font-size:12px; transition:background 0.15s; }
+    .commit-btn:hover { background:var(--accent-hover); }
+    .conflict-banner { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); padding:10px 16px; color:#fca5a5; font-size:12px; font-weight:600; display:flex; align-items:center; gap:8px; }
+    .resolve-btn { background:rgba(255,255,255,0.1); border:none; color:#fff; padding:3px 6px; border-radius:4px; font-size:10px; cursor:pointer; font-weight:600; transition:background 0.1s; }
+    .resolve-btn:hover { background:rgba(255,255,255,0.2); }
+    .stage-checkbox { width: 14px; height: 14px; flex-shrink: 0; cursor: pointer; }
+
+
+    /* === DIFF VIEWER === */
+    .diff-container {
+      font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.5;
+      white-space: pre; overflow-x: auto; background: #0e1017;
+      padding: 12px; border-radius: 6px; border: 1px solid var(--border);
+    }
+    .diff-add { color: #4ade80; background: rgba(34,197,94,0.08); display: block; border-left: 2px solid #4ade80; padding-left: 8px; margin-left: -12px; }
+    .diff-del { color: #ef4444; background: rgba(239,68,68,0.08); display: block; border-left: 2px solid #ef4444; padding-left: 8px; margin-left: -12px; }
+    .diff-hdr { color: #818cf8; font-weight: bold; display: block; padding-top: 8px; }
+    .diff-ctx { color: var(--text-secondary); display: block; padding-left: 10px; margin-left: -12px;}
+
+    /* === RESIZER === */
+    .resizer {
+      width: 4px;
+      background: var(--border);
+      cursor: col-resize;
+      flex-shrink: 0;
+      transition: background 0.15s;
+      z-index: 10;
+    }
+    .resizer:hover, .resizer.dragging {
+      background: var(--accent);
+    }
+
+    /* === MODALS === */
+    .modal-overlay {
+      position:fixed; inset:0; background:rgba(0,0,0,0.6);
+      display:flex; align-items:center; justify-content:center;
+      z-index:100; backdrop-filter:blur(4px);
+    }
+    .modal-box {
+      background:#141720; border:1px solid var(--border-light);
+      border-radius:12px; width:420px; max-width:90vw;
+      box-shadow:0 20px 60px rgba(0,0,0,0.6);
+    }
+    .modal-title {
+      padding:16px 20px; border-bottom:1px solid var(--border);
+      font-size:14px; font-weight:700; color:#fff;
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .modal-body { padding:20px; }
+    .modal-body label {
+      display:block; font-size:11px; font-weight:700;
+      color:var(--text-muted); text-transform:uppercase;
+      letter-spacing:0.06em; margin-bottom:6px;
+    }
+    .modal-body input, .modal-body select {
+      width:100%; padding:8px 12px; border-radius:8px;
+      background:rgba(255,255,255,0.04); border:1px solid var(--border);
+      color:var(--text-primary); font-size:13px;
+      outline:none; transition:border-color 0.15s;
+      margin-bottom:14px;
+    }
+    .modal-body input:focus, .modal-body select:focus { border-color:var(--accent); }
+    .modal-body select option { background: var(--bg-panel); color: var(--text-primary); border-radius: 4px; }
+    
+    .dropdown-list {
+      position: absolute; top: 100%; left: 0; right: 0; margin-top: 4px;
+      background: #141720; border: 1px solid var(--border); border-radius: 8px;
+      max-height: 200px; overflow-y: auto; z-index: 50;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    .dropdown-option {
+      padding: 8px 12px; font-size: 13px; color: var(--text-primary);
+      cursor: pointer; transition: background 0.1s;
+    }
+    .dropdown-option:hover { background: var(--bg-hover); }
+    
+    .modal-body .checkbox-row {
+      display:flex; align-items:center; gap:8px;
+      margin-bottom:14px; font-size:12px; color:var(--text-secondary);
+    }
+    .modal-footer {
+      padding:12px 20px 16px; display:flex; gap:8px; justify-content:flex-end;
+    }
+    .btn-modal {
+      padding:8px 20px; border-radius:8px; font-size:13px; font-weight:600;
+      border:none; cursor:pointer; transition:all 0.15s;
+    }
+    .btn-modal.primary { background:var(--accent); color:#fff; }
+    .btn-modal.primary:hover { background:var(--accent-hover); }
+    .btn-modal.secondary { background:rgba(255,255,255,0.06); color:var(--text-secondary); border:1px solid var(--border); }
+    .btn-modal.secondary:hover { background:var(--bg-hover); color:#fff; }
+    .btn-modal.danger { background:rgba(239,68,68,0.15); color:#ef4444; border:1px solid rgba(239,68,68,0.2); }
+    .btn-modal:disabled { opacity:0.4; pointer-events:none; }
+
+    /* === LOADING / ERROR === */
+    .state-center {
+      display:flex; align-items:center; justify-content:center;
+      height:100vh; flex-direction:column; gap:12px;
+    }
+    .state-center .icon { width:40px; height:40px; color:var(--accent); }
+
+    /* === TOAST === */
+    #toast-container {
+      position:fixed; bottom:16px; right:16px; z-index:200;
+      display:flex; flex-direction:column; gap:8px; pointer-events:none;
+    }
+    .toast {
+      pointer-events:auto;
+      display:flex; align-items:center; gap:8px;
+      padding:10px 16px; border-radius:8px;
+      font-size:12px; font-weight:500;
+      backdrop-filter:blur(12px);
+      border:1px solid rgba(255,255,255,0.08);
+      box-shadow:0 8px 24px rgba(0,0,0,0.4);
+      animation:fadeInUp 0.3s ease-out;
+    }
+    .toast.success { background:rgba(34,197,94,0.15); color:#4ade80; border-color:rgba(34,197,94,0.2); }
+    .toast.error { background:rgba(239,68,68,0.15); color:#ef4444; border-color:rgba(239,68,68,0.2); }
+    .toast.info { background:rgba(56,189,248,0.15); color:#38bdf8; border-color:rgba(56,189,248,0.2); }
+    .toast.warning { background:rgba(251,191,36,0.15); color:#fbbf24; border-color:rgba(251,191,36,0.2); }
+
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    .hidden { display:none !important; }
+  </style>
+</head>
+<body>
+  <!-- Loading -->
+  <div id="state-loading" class="state-center">
+    <svg class="icon" style="animation:spin 1s linear infinite" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+    </svg>
+    <p style="font-size:13px;color:var(--text-muted)">Loading repository...</p>
+  </div>
+
+  <!-- Error -->
+  <div id="state-error" class="state-center hidden">
+    <div style="width:48px;height:48px;border-radius:12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);display:flex;align-items:center;justify-content:center">
+      <svg style="width:24px;height:24px;color:#ef4444" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+      </svg>
+    </div>
+    <p style="font-size:14px;font-weight:600;color:#fca5a5">Failed to load repository</p>
+    <p id="error-message" style="font-size:12px;color:var(--text-muted);max-width:320px;text-align:center"></p>
+    <a href="/" style="margin-top:8px;padding:6px 16px;border-radius:6px;background:rgba(99,102,241,0.1);color:var(--accent-hover);font-size:12px;font-weight:600;text-decoration:none;border:1px solid rgba(99,102,241,0.2)">← Back to Dashboard</a>
+  </div>
+
+  <!-- Main App -->
+  <div id="state-data" class="hidden" style="display:none;flex-direction:column;height:100vh">
+    <!-- Toolbar -->
+    <header class="toolbar">
+      <div class="toolbar-left">
+        <a href="/" class="back-btn">
+          <svg style="width:14px;height:14px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+        </a>
+        <div class="divider"></div>
+        <span id="repo-name" class="repo-name">Repository</span>
+        <span id="repo-branch" class="branch-badge">main</span>
+        <span id="repo-status" class="status-badge"></span>
+      </div>
+      <div class="toolbar-center">
+        <button class="tb-btn" onclick="doAction('fetch')" id="tb-fetch" title="Fetch">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3 3m0 0l-3-3m3 3V8"/></svg>
+          Fetch
+        </button>
+        <button class="tb-btn" onclick="doAction('pull')" id="tb-pull" title="Pull">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          Pull
+        </button>
+        <button class="tb-btn" onclick="doAction('push')" id="tb-push" title="Push">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+          Push
+        </button>
+        <div class="divider"></div>
+        <button class="tb-btn" onclick="openCreateBranchModal()" title="Create Branch">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+          Branch
+        </button>
+        <button class="tb-btn" onclick="openMergeModal()" title="Merge">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+          Merge
+        </button>
+        <div class="divider"></div>
+        <button class="tb-btn" onclick="doAction('stash')" title="Stash">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+          Stash
+        </button>
+        <button class="tb-btn" onclick="doAction('pop')" title="Pop">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 8H5M19 8a2 2 0 100-4H5a2 2 0 100 4M19 8v10a2 2 0 01-2 2H7a2 2 0 01-2-2V8m9 4H8m4 0v4"/></svg>
+          Pop
+        </button>
+      </div>
+      <div class="toolbar-right">
+        <a id="btn-goto-repo" href="#" target="_blank" rel="noopener" class="tb-btn hidden" title="Open in browser">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          Repo
+        </a>
+        <button class="tb-btn" onclick="refreshAll()" id="tb-refresh" title="Refresh">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Refresh
+        </button>
+      </div>
+    </header>
+
+    <!-- 3-Panel Layout -->
+    <div class="app-layout">
+      <!-- Left Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <div style="padding: 12px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--bg-panel); z-index: 10;">
+          <div style="position: relative;">
+            <svg style="position: absolute; left: 8px; top: 7px; width: 14px; height: 14px; color: var(--text-muted);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <input type="text" id="branch-search" placeholder="Search branches..." oninput="filterBranches(this.value)" style="width: 100%; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px 6px 28px; color: var(--text-primary); font-size: 12px; outline: none; transition: border-color 0.15s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" autocomplete="off" />
+          </div>
+        </div>
+        <div class="sidebar-section">
+          <div class="section-header" onclick="toggleSection(this)">
+            <span><span class="arrow">▾</span> LOCAL</span>
+            <span class="section-count" id="local-count">0</span>
+          </div>
+          <div class="branch-list" id="local-branches"></div>
+        </div>
+        <div class="sidebar-section">
+          <div class="section-header" onclick="toggleSection(this)">
+            <span><span class="arrow">▾</span> REMOTE</span>
+            <span class="section-count" id="remote-count">0</span>
+          </div>
+          <div class="branch-list" id="remote-branches"></div>
+        </div>
+        <div class="sidebar-section">
+          <div class="section-header" onclick="toggleSection(this)">
+            <span><span class="arrow">▾</span> TAGS</span>
+            <span class="section-count" id="tags-count">0</span>
+          </div>
+          <div class="branch-list" id="tags-list"></div>
+        </div>
+      </aside>
+
+      <!-- Resizer Left -->
+      <div class="resizer" id="resizer-left"></div>
+
+      <!-- Center: Commit Graph -->
+      <main class="graph-panel">
+        <div class="graph-header">
+          <div style="flex:1">Commit Graph</div>
+        </div>
+        <div class="graph-viewport" id="graph-viewport">
+          <div class="graph-inner" id="graph-inner">
+            <svg id="graph-svg" xmlns="http://www.w3.org/2000/svg"></svg>
+            <div id="commit-list"></div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Resizer Right -->
+      <div class="resizer" id="resizer-right"></div>
+
+      <!-- Right: Commit Detail -->
+      <aside class="detail-panel" id="detail-panel">
+        <div class="detail-placeholder" id="detail-placeholder">
+          Click a commit to view details
+        </div>
+        <div id="detail-content" class="hidden"></div>
+        <div id="staging-panel" class="staging-panel hidden"></div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Create Branch Modal -->
+  <div id="modal-create-branch" class="modal-overlay hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+    <div class="modal-box">
+      <div class="modal-title">
+        <span>Create Branch</span>
+        <button onclick="document.getElementById('modal-create-branch').classList.add('hidden')" style="background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer">✕</button>
+      </div>
+      <div class="modal-body">
+        <label>Branch Name</label>
+        <input type="text" id="create-branch-name" placeholder="feature/my-new-feature" style="font-family:'JetBrains Mono',monospace;font-size:12px"/>
+        <label>From Branch</label>
+        <div style="position: relative;">
+          <input type="text" id="create-branch-from" placeholder="Select or type branch..." autocomplete="off" onfocus="document.getElementById('cb-dropdown').classList.remove('hidden')" onblur="setTimeout(()=>document.getElementById('cb-dropdown').classList.add('hidden'), 200)" oninput="filterCustomDropdown('cb-dropdown', this.value)" />
+          <div id="cb-dropdown" class="dropdown-list hidden"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal secondary" onclick="document.getElementById('modal-create-branch').classList.add('hidden')">Cancel</button>
+        <button class="btn-modal primary" id="btn-create-branch" onclick="createBranch()">Create Branch</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Merge Modal -->
+  <div id="modal-merge" class="modal-overlay hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+    <div class="modal-box">
+      <div class="modal-title">
+        <span>Merge Branch into <code id="merge-into-label" style="color:var(--accent-hover);font-family:'JetBrains Mono',monospace;font-size:12px;background:rgba(99,102,241,0.1);padding:2px 6px;border-radius:4px;margin-left:4px">main</code></span>
+        <button onclick="document.getElementById('modal-merge').classList.add('hidden')" style="background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer">✕</button>
+      </div>
+      <div class="modal-body">
+        <label>Merge From</label>
+        <div style="position: relative;">
+          <input type="text" id="merge-branch" placeholder="Select or type branch..." autocomplete="off" onfocus="document.getElementById('m-dropdown').classList.remove('hidden')" onblur="setTimeout(()=>document.getElementById('m-dropdown').classList.add('hidden'), 200)" oninput="filterCustomDropdown('m-dropdown', this.value)" />
+          <div id="m-dropdown" class="dropdown-list hidden"></div>
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="merge-noff" checked style="width:auto;margin:0">
+          <span>--no-ff <span style="color:var(--text-muted)">(create merge commit)</span></span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal secondary" onclick="document.getElementById('modal-merge').classList.add('hidden')">Cancel</button>
+        <button class="btn-modal primary" id="btn-merge" onclick="mergeBranch()" style="background:#a855f7">Merge</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Diff Modal -->
+  <div id="modal-diff" class="modal-overlay hidden" onclick="if(event.target===this)this.classList.add('hidden')">
+    <div class="modal-box" style="width:800px; max-width:95vw; height:80vh; display:flex; flex-direction:column;">
+      <div class="modal-title">
+        <span id="diff-file-name" style="font-family:'JetBrains Mono',monospace;font-size:13px"></span>
+        <button onclick="document.getElementById('modal-diff').classList.add('hidden')" style="background:none;border:none;color:var(--text-muted);font-size:18px;cursor:pointer">✕</button>
+      </div>
+      <div class="modal-body" style="flex:1; overflow:hidden; display:flex; flex-direction:column; padding:0;">
+        <div id="diff-content" class="diff-container" style="flex:1; margin:16px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <script src="/repo.js"></script>
+</body>
+</html>
