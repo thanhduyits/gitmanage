@@ -583,7 +583,7 @@ app.get('/api/repo/branches', async (req, res) => {
   if (!repoPath) return res.status(400).json({ error: 'Missing path' });
   try {
     const git = simpleGit(repoPath);
-    const summary = await git.branchLocal();
+    const summary = await git.branch();
     res.json(summary.all);
   } catch (err) {
     res.status(500).json({ error: 'Failed to list branches', detail: err.message });
@@ -597,10 +597,22 @@ app.post('/api/repo/checkout', async (req, res) => {
   try {
     const result = await withRepoLock(repoPath, () => gitLimit(async () => {
       const git = simpleGit(repoPath);
-      await git.checkout(branch);
+      let args = [branch];
+      if (branch.startsWith('remotes/')) {
+        const parts = branch.split('/');
+        const localName = parts.slice(2).join('/');
+        const localBranches = await git.branchLocal();
+        if (localBranches.all.includes(localName)) {
+          args = [localName];
+        } else {
+          args = ['-b', localName, '--track', branch.replace('remotes/', '')];
+        }
+      }
+      await git.checkout(args);
       invalidateCache(repoPath);
       const info = await getRepoInfo(repoPath, workspace, { skipCache: true });
-      return { message: `Checked out ${branch}`, repo: info };
+      const checkedOutBranch = args[0] === '-b' ? args[1] : args[0];
+      return { message: `Checked out ${checkedOutBranch}`, repo: info };
     }));
     res.json(result);
   } catch (err) {

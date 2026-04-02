@@ -954,8 +954,21 @@
         </div>
 
         <div id="branch-modal-content" class="hidden">
-          <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Select Local
-            Branch</label>
+          <!-- Tab Buttons -->
+          <div class="flex items-center gap-1 mb-3 p-1 bg-black/40 rounded-xl border border-white/5">
+            <button id="branch-tab-local" onclick="switchBranchTab('local')"
+              class="branch-tab flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 bg-accent/20 text-accent border border-accent/30">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              Local <span id="branch-count-local" class="ml-0.5 text-[10px] opacity-70">(0)</span>
+            </button>
+            <button id="branch-tab-remote" onclick="switchBranchTab('remote')"
+              class="branch-tab flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 text-slate-400 hover:text-slate-300 hover:bg-white/5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+              Remote <span id="branch-count-remote" class="ml-0.5 text-[10px] opacity-70">(0)</span>
+            </button>
+          </div>
+
+          <!-- Search Filter -->
           <div class="relative mb-3">
             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -967,9 +980,13 @@
               class="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm font-medium text-slate-200 placeholder-slate-500/80 focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/50 shadow-inner backdrop-blur-md transition-all"
               placeholder="Tìm tên nhánh...">
           </div>
+
+          <!-- Branch List -->
           <div id="branch-list"
             class="max-h-56 overflow-y-auto border border-white/5 rounded-xl bg-black/40 shadow-inner flex flex-col p-1.5 space-y-0.5 custom-scrollbar">
           </div>
+
+          <!-- Actions -->
           <div class="flex items-center gap-3 mt-5 border-t border-white/5 pt-4">
             <button onclick="closeBranchModal()"
               class="flex-1 px-4 py-2.5 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-all text-sm font-bold">Cancel</button>

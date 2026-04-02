@@ -1105,7 +1105,10 @@
     // Branch Modal Logic
     let branchModalContext = { path: null, workspace: null, rowIndex: null, currentBranch: null };
     let currentBranchesList = [];
+    let localBranches = [];
+    let remoteBranches = [];
     let selectedBranchName = null;
+    let activeBranchTab = 'local';
 
     async function openBranchModal(repoPath, wsPath, rowIndex, currentBranch) {
       branchModalContext = { path: repoPath, workspace: wsPath, rowIndex, currentBranch };
@@ -1133,11 +1136,22 @@
         if (!res.ok) throw new Error(branches.error || 'Failed to load');
         
         currentBranchesList = branches;
+        localBranches = branches.filter(b => !b.startsWith('remotes/'));
+        remoteBranches = branches.filter(b => b.startsWith('remotes/'));
         selectedBranchName = currentBranch;
+        
+        // Update tab counters
+        const countLocal = document.getElementById('branch-count-local');
+        const countRemote = document.getElementById('branch-count-remote');
+        if (countLocal) countLocal.textContent = `(${localBranches.length})`;
+        if (countRemote) countRemote.textContent = `(${remoteBranches.length})`;
         
         loading.classList.add('hidden');
         content.classList.remove('hidden');
-        renderBranchList(currentBranchesList);
+        
+        // Default to local tab
+        activeBranchTab = 'local';
+        switchBranchTab('local');
         if (filterInput) filterInput.focus();
       } catch (err) {
         loading.classList.add('hidden');
@@ -1146,12 +1160,35 @@
       }
     }
 
+    function switchBranchTab(tab) {
+      activeBranchTab = tab;
+      const tabLocal = document.getElementById('branch-tab-local');
+      const tabRemote = document.getElementById('branch-tab-remote');
+      const filterInput = document.getElementById('branch-filter');
+      
+      // Active tab style
+      const activeClass = 'bg-accent/20 text-accent border border-accent/30';
+      const inactiveClass = 'text-slate-400 hover:text-slate-300 hover:bg-white/5 border border-transparent';
+      
+      if (tab === 'local') {
+        tabLocal.className = `branch-tab flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 ${activeClass}`;
+        tabRemote.className = `branch-tab flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 ${inactiveClass}`;
+      } else {
+        tabLocal.className = `branch-tab flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 ${inactiveClass}`;
+        tabRemote.className = `branch-tab flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 ${activeClass}`;
+      }
+      
+      // Clear filter and re-render
+      if (filterInput) filterInput.value = '';
+      renderBranchList(tab === 'local' ? localBranches : remoteBranches);
+    }
+
     function renderBranchList(branchesToShow) {
       const list = document.getElementById('branch-list');
       const btnCheckout = document.getElementById('btn-checkout');
       
       if (branchesToShow.length === 0) {
-        list.innerHTML = `<div class="px-3 py-4 text-sm text-slate-500 text-center italic">Không tìm thấy nhánh phù hợp</div>`;
+        list.innerHTML = `<div class="px-3 py-4 text-sm text-slate-500 text-center italic">${activeBranchTab === 'local' ? 'Không có nhánh local nào' : 'Không có nhánh remote nào'}</div>`;
         btnCheckout.disabled = true;
         return;
       }
@@ -1159,10 +1196,13 @@
       list.innerHTML = branchesToShow.map(b => {
         const isSelected = b === selectedBranchName;
         const isCurrent = b === branchModalContext.currentBranch;
+        const isRemote = b.startsWith('remotes/');
+        const displayName = isRemote ? b.replace('remotes/', '') : b;
+        
         return `<button onclick="selectBranchForCheckout('${b}')" class="group flex items-center w-full px-3 py-2.5 rounded-md text-sm text-left transition-colors ${isSelected ? 'bg-accent/20 text-accent font-medium' : 'text-slate-300 hover:bg-surface-hover border border-transparent'}">
-          ${isCurrent ? '<span class="mr-2 text-emerald-400" title="Nhánh hiện tại">★</span>' : '<span class="mr-2 opacity-0">★</span>'}
-          <span class="truncate flex-1 ${isSelected ? '' : 'group-hover:text-white'}">${b}</span>
-          ${isSelected ? '<svg class="w-4 h-4 ml-2 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>' : ''}
+          ${isCurrent ? '<span class="mr-2 text-emerald-400 flex-shrink-0" title="Nhánh hiện tại">★</span>' : (isRemote ? '<span class="mr-2 text-sky-400 flex-shrink-0"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg></span>' : '<span class="mr-2 opacity-0 flex-shrink-0">★</span>')}
+          <span class="truncate flex-1 ${isSelected ? '' : 'group-hover:text-white'}">${displayName}</span>
+          ${isSelected ? '<svg class="w-4 h-4 ml-2 text-accent flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>' : ''}
         </button>`;
       }).join('');
       
@@ -1176,11 +1216,12 @@
 
     function filterBranchList(term) {
       term = term.toLowerCase().trim();
+      const source = activeBranchTab === 'local' ? localBranches : remoteBranches;
       if (!term) {
-        renderBranchList(currentBranchesList);
+        renderBranchList(source);
         return;
       }
-      const filtered = currentBranchesList.filter(b => b.toLowerCase().includes(term));
+      const filtered = source.filter(b => b.toLowerCase().includes(term));
       renderBranchList(filtered);
     }
 
