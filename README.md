@@ -1,4 +1,4 @@
-# 🌌 GitManage — Workspace Orchestrator (v1.2.0)
+# 🌌 GitManage — Workspace Orchestrator (v1.2.1 Beta)
 
 > **GitManage Dashboard** là một công cụ quản lý hàng loạt repository Git trực quan, hiện đại, được thiết kế chuyên biệt để giải quyết các thách thức trong môi trường **Microservices** hoặc các dự án có cấu trúc monorepo phân tán phức tạp.
 
