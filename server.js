@@ -421,7 +421,8 @@ app.post('/api/repo/action', async (req, res) => {
       } else if (action === 'pull') {
         await git.pull();
       } else if (action === 'push') {
-        await git.push();
+        const branchSummary = await git.branchLocal();
+        await git.push(['-u', 'origin', branchSummary.current]);
       } else if (action === 'stash') {
         await git.stash(['save', 'GitManage UI Stash']);
       } else if (action === 'pop') {
@@ -565,7 +566,8 @@ app.post('/api/repo/commit', async (req, res) => {
 
       // Optional push after commit
       if (shouldPush) {
-        await git.push();
+        const branchSummary = await git.branchLocal();
+        await git.push(['-u', 'origin', branchSummary.current]);
       }
 
       invalidateCache(repoPath);
@@ -771,9 +773,16 @@ app.post('/api/repo/create-branch', async (req, res) => {
       if (from) {
         // Handle remote branch reference
         const fromRef = from.startsWith('remotes/') ? from.replace('remotes/', '') : from;
-        args.push(fromRef);
+        args.push('--no-track', fromRef);
       }
       await git.checkout(args);
+
+      // Automatically push new branch to remote and set upstream
+      try {
+        await git.push(['-u', 'origin', sanitized]);
+      } catch (pushErr) {
+        console.warn(`Could not automatically push new branch ${sanitized} to origin:`, pushErr.message);
+      }
 
       invalidateCache(repoPath);
       return { message: `Branch "${sanitized}" created successfully`, branch: sanitized };
