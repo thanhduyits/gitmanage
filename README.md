@@ -1,8 +1,18 @@
-# 🌌 GitManage — Workspace Orchestrator (v1.2.1 Beta)
+# 🌌 GitManage — Workspace Orchestrator (v1.3.0 Beta)
 
 > **GitManage Dashboard** là một công cụ quản lý hàng loạt repository Git trực quan, hiện đại, được thiết kế chuyên biệt để giải quyết các thách thức trong môi trường **Microservices** hoặc các dự án có cấu trúc monorepo phân tán phức tạp.
 
-![Giao diện Glassmorphism Cực Đỉnh](https://img.shields.io/badge/UI-Glassmorphism-purple?style=flat-square) ![Phiên bản](https://img.shields.io/badge/Version-v1.2.0-emerald?style=flat-square) ![Node.js](https://img.shields.io/badge/Node.js-Backend-blue?style=flat-square) ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v3.0+-06B6D4?style=flat-square)
+![Giao diện Glassmorphism Cực Đỉnh](https://img.shields.io/badge/UI-Glassmorphism-purple?style=flat-square) ![Phiên bản](https://img.shields.io/badge/Version-v1.3.0-emerald?style=flat-square) ![Node.js](https://img.shields.io/badge/Node.js-Backend-blue?style=flat-square) ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v3.0+-06B6D4?style=flat-square)
+
+---
+
+## 📋 Changelog v1.3.0
+
+### 🐛 Bug Fix: Merge sai repository sau Bulk Action
+- **Nguyên nhân**: Sau khi thực hiện Bulk Push, bảng repo tự động sắp xếp lại theo status khiến user click nhầm vào repo khác rồi merge sai.
+- **Fix**: Reset sort sau bulk action để tránh row đổi vị trí âm thầm.
+- **Safety**: Merge modal giờ hiển thị rõ **tên repo + path** để user xác nhận đúng trước khi merge.
+- **Logging**: Server ghi log chi tiết `[MERGE]` mỗi thao tác merge, dễ truy vết nếu phát sinh sự cố.
 
 ---
 
@@ -24,6 +34,7 @@ Thay vì dùng terminal cd vào từng repo, giờ đây quản lý thao tác ch
 - **Trải Nghiệm Lựa Chọn Inspired-bởi GitKraken**: Trang chi tiết quản lý hoàn toàn độc lập với các khu vực thanh bên (Sidebar) có thể kéo thả thay đổi kích thước (Resizable), mang lại không gian quan sát linh hoạt nhất giữa danh sách Branch và hiển thị thông tin Commit.
 - **Quản lý Toàn diên Local & Remote Branches**: Nhánh mạng máy chủ (Remote) hiển thị tách biệt rõ rệt bằng biểu tượng đánh dấu riêng. Hỗ trợ bấm trực tiếp để Checkout Remote Branch tự động sinh một nhánh local truy vết tương ứng.
 - **Thao tác Git Nâng cao**: Form tạo nhánh mới, so sánh nhánh (Compare) với thống kê lịch sử và số lượng file sửa đổi (Diff stats), hỗ trợ tính năng cập nhật hộp thoại Merge an toàn qua cờ cấu hình `--no-ff`.
+- **Merge an toàn**: Hộp thoại Merge hiển thị rõ ràng **tên repo đang thao tác**, confirmation bao gồm repo name + path đầy đủ để tránh nhầm lẫn.
 - **Lịch sử Commit Chi Tiết Toàn Bộ**: Giao diện duyệt timeline trực quan kèm tên tác giả, ngày giờ tháng hiển thị đầy đủ chuyên nghiệp và xem nhanh chi tiết từng cụm file thay đổi.
 
 ### 🎨 Giao diện "Premium" & Trải Nghiệm Khách Hàng (Modern UI/UX)

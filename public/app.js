@@ -1059,9 +1059,21 @@
         showToast(`Hoàn thành bulk action: ${successCount} thành công, ${errorCount} lỗi.`, 'warning');
       }
       
+      // Reset sort after bulk action to prevent silent row re-ordering
+      // This prevents a bug where users click on the wrong repo after rows shift positions
+      if (currentSort.column === 'status') {
+        currentSort.column = null;
+        currentSort.direction = 'asc';
+        updateSortHeaderUI();
+      }
+      
       // Cleanup selection or just re-render properly
       selectedRepoPaths.clear(); // Auto clear after bulk action completes to prevent accidental duplicate actions
       filterReposText(); // Re-render and update UI bounds
+      
+      // Scroll to top so user starts from a known visual state
+      const tableContainer = document.querySelector('.table-container') || reposTbody?.closest('.overflow-auto');
+      if (tableContainer) tableContainer.scrollTop = 0;
     }
 
     async function removeSelectedRepos() {

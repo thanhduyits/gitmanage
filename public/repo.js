@@ -555,6 +555,9 @@ window.createBranch = async function() {
 
 window.openMergeModal = function() {
   document.getElementById('merge-into-label').textContent = repoData.branch;
+  // Show repo name in modal header so user can verify which repo they're merging on
+  const mergeRepoLabel = document.getElementById('merge-repo-label');
+  if (mergeRepoLabel) mergeRepoLabel.textContent = repoData.name;
   const allBranches = [...repoData.localBranches, ...repoData.remoteBranches].filter(b => b !== repoData.branch);
   const list = document.getElementById('m-dropdown');
   list.innerHTML = allBranches.map(b => {
@@ -584,7 +587,8 @@ window.mergeBranch = async function() {
   const btn = document.getElementById('btn-merge');
   if (!branch) { showToast('Select a branch', 'warning'); return; }
   const display = branch.startsWith('remotes/') ? branch.replace('remotes/','') : branch;
-  if (!confirm(`Merge "${display}" into "${repoData.branch}"?`)) return;
+  // Include repo name in confirmation so user can verify they're merging on the correct repository
+  if (!confirm(`[${repoData.name}] Merge "${display}" into "${repoData.branch}"?\n\nRepo: ${repoPath}`)) return;
   btn.disabled = true;
   btn.textContent = 'Merging...';
   try {
@@ -595,11 +599,11 @@ window.mergeBranch = async function() {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Merge failed');
-    showToast('Merge successful!', 'success');
+    showToast(`Merge successful on <b>${escapeHtml(repoData.name)}</b>!`, 'success');
     document.getElementById('modal-merge').classList.add('hidden');
     await loadAll();
   } catch (err) {
-    showToast(`Merge failed: ${err.message}`, 'error');
+    showToast(`Merge failed on <b>${escapeHtml(repoData.name)}</b>: ${err.message}`, 'error');
   } finally {
     btn.disabled = false;
     btn.textContent = 'Merge';

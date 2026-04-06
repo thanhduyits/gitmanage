@@ -919,9 +919,16 @@ app.post('/api/repo/merge', async (req, res) => {
   const { path: repoPath, workspace, branch, noFf } = req.body;
   if (!repoPath || !branch) return res.status(400).json({ error: 'Missing path or branch' });
 
+  console.log(`[MERGE] Starting merge on repo: ${repoPath}`);
+  console.log(`[MERGE] Merging branch "${branch}" (noFf: ${noFf})`);
+
   try {
     const result = await withRepoLock(repoPath, () => gitLimit(async () => {
       const git = simpleGit(repoPath);
+
+      // Verify we're operating on the correct repo by checking current branch
+      const currentBranch = await git.branchLocal();
+      console.log(`[MERGE] Current branch in ${path.basename(repoPath)}: ${currentBranch.current}`);
 
       // Build merge args
       const mergeRef = branch.startsWith('remotes/') ? branch.replace('remotes/', '') : branch;
@@ -929,13 +936,15 @@ app.post('/api/repo/merge', async (req, res) => {
 
       await git.merge([mergeRef, ...options]);
 
+      console.log(`[MERGE] Successfully merged "${mergeRef}" into "${currentBranch.current}" in ${path.basename(repoPath)}`);
+
       invalidateCache(repoPath);
       const info = await getRepoInfo(repoPath, workspace || '', { skipCache: true });
       return { message: `Successfully merged "${mergeRef}" into current branch`, repo: info };
     }));
     res.json(result);
   } catch (err) {
-    console.error('Merge error:', err.message);
+    console.error(`[MERGE] Error on ${repoPath}:`, err.message);
     res.status(500).json({ error: err.message });
   }
 });
