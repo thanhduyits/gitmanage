@@ -1,5 +1,33 @@
 // ===== GitKraken-Style Repo Detail =====
 
+// === Custom Confirm Dialog ===
+function customConfirm(message) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('confirm-modal');
+    const msgEl = document.getElementById('confirm-message');
+    const btnOk = document.getElementById('btn-ok-confirm');
+    const btnCancel = document.getElementById('btn-cancel-confirm');
+    const btnClose = document.getElementById('btn-close-confirm');
+
+    msgEl.textContent = message;
+    modal.classList.remove('hidden');
+
+    const cleanup = (result) => {
+      modal.classList.add('hidden');
+      btnOk.removeEventListener('click', onOk);
+      btnCancel.removeEventListener('click', onCancel);
+      btnClose.removeEventListener('click', onCancel);
+      resolve(result);
+    };
+    const onOk = () => cleanup(true);
+    const onCancel = () => cleanup(false);
+
+    btnOk.addEventListener('click', onOk);
+    btnCancel.addEventListener('click', onCancel);
+    btnClose.addEventListener('click', onCancel);
+  });
+}
+
 // === Constants ===
 const LANE_COLORS = ['#00b4d8','#e040fb','#66bb6a','#ffa726','#7c4dff','#ef5350','#26c6da','#29b6f6'];
 const ROW_HEIGHT = 34;
@@ -458,7 +486,8 @@ function renderCommitDetail(data) {
 
 // === Sidebar Actions ===
 window.checkoutBranch = async function(branch) {
-  if (!confirm(`Checkout "${branch}"?`)) return;
+  const isConfirmed = await customConfirm('Checkout "' + branch + '"?');
+  if (!isConfirmed) return;
   try {
     const res = await fetch('/api/repo/checkout', {
       method: 'POST',
@@ -588,7 +617,8 @@ window.mergeBranch = async function() {
   if (!branch) { showToast('Select a branch', 'warning'); return; }
   const display = branch.startsWith('remotes/') ? branch.replace('remotes/','') : branch;
   // Include repo name in confirmation so user can verify they're merging on the correct repository
-  if (!confirm(`[${repoData.name}] Merge "${display}" into "${repoData.branch}"?\n\nRepo: ${repoPath}`)) return;
+  const isConfirmed = await customConfirm('[' + repoData.name + '] Merge "' + display + '" into "' + repoData.branch + '"?\n\nRepo: ' + repoPath);
+  if (!isConfirmed) return;
   btn.disabled = true;
   btn.textContent = 'Merging...';
   try {
@@ -816,7 +846,8 @@ window.executeCommit = async function() {
 };
 
 window.resolveConflict = async function(file, resolution) {
-  if (!confirm(`Resolve "${file}" using ${resolution}?`)) return;
+  const isConfirmed = await customConfirm('Resolve "' + file + '" using ' + resolution + '?');
+  if (!isConfirmed) return;
   try {
     const res = await fetch('/api/repo/resolve-conflict', {
       method: 'POST',

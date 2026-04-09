@@ -1119,6 +1119,99 @@
     </div>
   </div>
 
+  <!-- Merge Modal -->
+  <div id="merge-modal"
+    class="hidden fixed inset-0 bg-[#0b0c10]/70 backdrop-blur-md z-50 flex items-center justify-center opacity-0 transition-opacity duration-200">
+    <div
+      class="glass-card w-full max-w-sm rounded-2xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col overflow-hidden scale-95 transition-transform duration-200">
+      <div class="px-5 py-4 border-b border-white/5 flex justify-between items-center bg-white/5">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+          <h3 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-violet-200">Merge Branch</h3>
+        </div>
+        <button onclick="closeMergeModal()"
+          class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors bg-white/5">
+          <svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="p-5 bg-black/20">
+        <!-- Repo context info -->
+        <div class="flex items-center gap-2 mb-4 p-3 rounded-xl bg-white/5 border border-white/5">
+          <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+          <div class="min-w-0">
+            <div id="merge-repo-name" class="text-[13px] font-bold text-white truncate"></div>
+            <div class="flex items-center gap-1.5 mt-0.5">
+              <span class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Into:</span>
+              <span id="merge-current-branch" class="text-[11px] font-mono text-emerald-400 truncate"></span>
+            </div>
+          </div>
+        </div>
+
+        <div id="merge-modal-loading" class="text-center text-slate-400 py-6">
+          <svg class="w-6 h-6 spin mx-auto text-violet-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span class="text-sm font-medium">Đang tải danh sách branch...</span>
+        </div>
+
+        <div id="merge-modal-content" class="hidden">
+          <!-- Tab Buttons -->
+          <div class="flex items-center gap-1 mb-3 p-1 bg-black/40 rounded-xl border border-white/5">
+            <button id="merge-tab-local" onclick="switchMergeTab('local')"
+              class="merge-tab flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 bg-violet-500/20 text-violet-400 border border-violet-500/30">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              Local <span id="merge-count-local" class="ml-0.5 text-[10px] opacity-70">(0)</span>
+            </button>
+            <button id="merge-tab-remote" onclick="switchMergeTab('remote')"
+              class="merge-tab flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 text-slate-400 hover:text-slate-300 hover:bg-white/5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/></svg>
+              Remote <span id="merge-count-remote" class="ml-0.5 text-[10px] opacity-70">(0)</span>
+            </button>
+          </div>
+
+          <!-- Search Filter -->
+          <div class="relative mb-3">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <input type="text" id="merge-branch-filter" oninput="filterMergeBranchList(this.value)"
+              class="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm font-medium text-slate-200 placeholder-slate-500/80 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 shadow-inner backdrop-blur-md transition-all"
+              placeholder="Tìm tên nhánh...">
+          </div>
+
+          <!-- Branch List -->
+          <div id="merge-branch-list"
+            class="max-h-56 overflow-y-auto border border-white/5 rounded-xl bg-black/40 shadow-inner flex flex-col p-1.5 space-y-0.5 custom-scrollbar">
+          </div>
+
+          <!-- No-FF Checkbox -->
+          <label class="flex items-center gap-2 mt-3 cursor-pointer text-xs text-slate-300 hover:text-white transition-colors px-1">
+            <input type="checkbox" id="merge-noff"
+              class="rounded bg-black/40 border-white/20 text-violet-500 focus:ring-violet-500/50 w-3.5 h-3.5">
+            <span class="font-medium">--no-ff (Always create merge commit)</span>
+          </label>
+
+          <!-- Actions -->
+          <div class="flex items-center gap-3 mt-5 border-t border-white/5 pt-4">
+            <button onclick="closeMergeModal()"
+              class="flex-1 px-4 py-2.5 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-all text-sm font-bold">Cancel</button>
+            <button id="btn-execute-merge" onclick="executeMerge()"
+              class="flex-1 px-4 py-2.5 flex items-center justify-center gap-1.5 rounded-xl bg-violet-500 text-white hover:bg-violet-600 transition-all shadow-[0_4px_14px_rgba(139,92,246,0.4)] text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+              Merge
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Conflict Modal -->
   <div id="conflict-modal"
     class="hidden fixed inset-0 bg-[#0b0c10]/70 backdrop-blur-md z-50 flex flex-col items-center justify-center opacity-0 transition-opacity duration-200">
